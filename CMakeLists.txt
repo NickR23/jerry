@@ -24,7 +24,7 @@ endif()
 enable_testing()
 find_package(GTest REQUIRED)
 add_executable(tokenizer_tests
-  test/TokenizerTest.cpp
+  test/TokenizerStateTest.cpp
   src/Tokenizer.cpp
 )
 target_include_directories(tokenizer_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)

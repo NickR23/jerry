@@ -24,5 +24,6 @@ namespace jerry {
     return init(input, position + 1);
   }
 
-  Tokenizer::Tokenizer(){};
+  template<typename T>
+  Tokenizer<T>::Tokenizer(TokenizerFunc func) : func(func) {};
 }
