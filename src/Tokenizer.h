@@ -11,11 +11,11 @@ namespace jerry {
     size_t position;
     explicit TokenizerState(std::string s, size_t pos);
   public:
-    static std::optional<TokenizerState> init(std::string s, size_t pos);
+    static TokenizerState init(std::string s, size_t pos);
 
     char currentCharacter() const;
     size_t getPosition() const;
-    std::optional<TokenizerState> advance() const;
+    TokenizerState advance() const;
   };
 
   template<typename T>
@@ -27,5 +27,6 @@ namespace jerry {
     explicit Tokenizer() = default;
   public:
     static Tokenizer<T> init(TokenizerFunc f);
+    std::optional<std::pair<T, TokenizerState>> run(TokenizerState s);
   };
 }

@@ -5,10 +5,7 @@
 namespace jerry {
   TokenizerState::TokenizerState(std::string s, size_t pos) : input(s), position(pos){};
 
-  std::optional<TokenizerState> TokenizerState::init(std::string s, size_t pos) {
-    if (pos >= s.size()) {
-      return std::nullopt;
-    }
+  TokenizerState TokenizerState::init(std::string s, size_t pos) {
     return TokenizerState(s, pos);
   }
 
@@ -20,7 +17,7 @@ namespace jerry {
     return input[position];
   }
 
-  std::optional<TokenizerState> TokenizerState::advance() const {
+  TokenizerState TokenizerState::advance() const {
     return init(input, position + 1);
   }
 
@@ -29,5 +26,12 @@ namespace jerry {
     Tokenizer<T> toke = Tokenizer();
     toke.func = f;
     return toke;
+  }
+
+  template<typename T>
+  std::optional<std::pair<T, TokenizerState>> Tokenizer<T>::run(TokenizerState s) {
+    // The TokenizerFunc passes it's execution result back up the stack.
+    // TokenizerFunc == std::optional<std::pair<T, TokenizerState>>
+    return this->func(s);
   }
 }
