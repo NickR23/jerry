@@ -9,7 +9,8 @@ namespace jerry {
     static std::optional<TokenizerState> init(std::string s, size_t pos);
 
     char currentCharacter() const;
-    TokenizerState advance() const;
+    size_t getPosition() const;
+    std::optional<TokenizerState> advance() const;
 
     private:
     std::string input;

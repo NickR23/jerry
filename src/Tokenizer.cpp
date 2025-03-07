@@ -9,14 +9,20 @@ namespace jerry {
     if (pos >= s.size()) {
       return std::nullopt;
     }
-    return TokenizerState(s,pos);
+    return TokenizerState(s, pos);
+  }
+
+  size_t TokenizerState::getPosition() const {
+    return position;
   }
 
   char TokenizerState::currentCharacter() const {
     return input[position];
   }
 
-  //TokenizerState advance() const {}
+  std::optional<TokenizerState> TokenizerState::advance() const {
+    return init(input, position + 1);
+  }
 
   Tokenizer::Tokenizer(){};
 }
