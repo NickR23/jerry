@@ -25,5 +25,9 @@ namespace jerry {
   }
 
   template<typename T>
-  Tokenizer<T>::Tokenizer(TokenizerFunc func) : func(func) {};
+  Tokenizer<T> Tokenizer<T>::init(TokenizerFunc f) {
+    Tokenizer<T> toke = Tokenizer();
+    toke.func = f;
+    return toke;
+  }
 }
