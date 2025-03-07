@@ -5,6 +5,13 @@
 namespace jerry {
   TokenizerState::TokenizerState(std::string s, size_t pos) : input(s), position(pos){};
 
+  std::optional<TokenizerState> TokenizerState::init(std::string s, size_t pos) {
+    if (pos >= s.size()) {
+      return std::nullopt;
+    }
+    return TokenizerState(s,pos);
+  }
+
   char TokenizerState::currentCharacter() const {
     return input[position];
   }

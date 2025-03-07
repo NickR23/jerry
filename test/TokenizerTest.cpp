@@ -3,13 +3,12 @@
 
 class TokenizerStateTest :public ::testing::TestWithParam<std::tuple<std::string, int, char>> {};
 
-
-TEST_P(TokenizerStateTest, SanityTest) {
+TEST_P(TokenizerStateTest, TokenStateInit) {
   const auto& [input, position, expected_char] = GetParam();
-  jerry::TokenizerState state = jerry::TokenizerState(input, position);
-  EXPECT_EQ(state.currentCharacter(), expected_char);
+  std::optional<jerry::TokenizerState> state = jerry::TokenizerState::init(input, position);
+  ASSERT_TRUE(state);
+  EXPECT_EQ(state->currentCharacter(), expected_char);
 }
-
 INSTANTIATE_TEST_SUITE_P(
     GetPositionTests,
     TokenizerStateTest,
@@ -21,3 +20,11 @@ INSTANTIATE_TEST_SUITE_P(
       std::make_tuple("{\"message\": \"hello world\"}", 25, '}')
     )
 );
+
+TEST(TokenizerStateTest, TokenStateInitInvalid) {
+  // Initializing position past input string size.
+  std::string input = "{\"message\": \"hello world\"}";
+  size_t position = input.size();
+  std::optional<jerry::TokenizerState> state = jerry::TokenizerState::init(input, position);
+  ASSERT_FALSE(state);
+}
