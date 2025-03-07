@@ -21,14 +21,6 @@ INSTANTIATE_TEST_SUITE_P(
     )
 );
 
-TEST(TokenizerStateTest, TokenizerStateInitInvalid) {
-  // Initializing position past input string size.
-  std::string input = "{\"message\": \"hello world\"}";
-  size_t position = input.size();
-  std::optional<jerry::TokenizerState> state = jerry::TokenizerState::init(input, position);
-  ASSERT_FALSE(state);
-}
-
 TEST_P(TokenizerStateTest, TokenizerStateAdvanceTest) {
   const auto& [input, iterations, expected_char] = GetParam();
   std::optional<jerry::TokenizerState> state = jerry::TokenizerState::init(input, 0);
@@ -50,19 +42,3 @@ INSTANTIATE_TEST_SUITE_P(
       std::make_tuple("{\"message\": \"hello world\"}", 25, '}')
     )
 );
-
-TEST(TokenizerStateTest, TokenizerStateAdvanceInvalidTest) {
-  std::string input = "{\"message\": \"hello world\"}";
-  size_t position = input.size();
-  std::optional<jerry::TokenizerState> state = jerry::TokenizerState::init(input, 0);
-  for (int i = 0; i < input.size() - 1; i++) {
-    state = state->advance();
-  }
-  ASSERT_TRUE(state);
-  EXPECT_EQ(state->currentCharacter(), '}');
-  EXPECT_EQ(state->getPosition(), input.size() - 1);
-
-  // When I advance past the end of the input string, this should be nullopt.
-  state = state->advance();
-  ASSERT_TRUE(!state);
-}

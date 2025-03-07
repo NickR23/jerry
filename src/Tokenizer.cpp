@@ -27,11 +27,4 @@ namespace jerry {
     toke.func = f;
     return toke;
   }
-
-  template<typename T>
-  std::optional<std::pair<T, TokenizerState>> Tokenizer<T>::run(TokenizerState s) {
-    // The TokenizerFunc passes it's execution result back up the stack.
-    // TokenizerFunc == std::optional<std::pair<T, TokenizerState>>
-    return this->func(s);
-  }
 }
