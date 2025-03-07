@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/jerry.dir/link.d CMakeFiles/jerry.dir/main.cpp.o CMakeFiles/jerry.dir/Tokenizer.cpp.o -o jerry
