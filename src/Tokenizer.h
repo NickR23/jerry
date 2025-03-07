@@ -24,7 +24,8 @@ namespace jerry {
     // Used during bind operations. 
     using TokenizerFunc = std::function<std::optional<std::pair<T, TokenizerState>>(TokenizerState)>;
     TokenizerFunc func;
-  public:
     explicit Tokenizer(TokenizerFunc f);
+  public:
+    static Tokenizer<T>init(TokenizerFunc f);
   };
 }
