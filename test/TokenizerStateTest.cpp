@@ -51,7 +51,7 @@ INSTANTIATE_TEST_SUITE_P(
     )
 );
 
-TEST_P(TokenizerStateTest, TokenizerStateAdvanceInvalidTest) {
+TEST(TokenizerStateTest, TokenizerStateAdvanceInvalidTest) {
   std::string input = "{\"message\": \"hello world\"}";
   size_t position = input.size();
   std::optional<jerry::TokenizerState> state = jerry::TokenizerState::init(input, 0);
