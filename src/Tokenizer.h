@@ -26,11 +26,21 @@ namespace jerry {
   public:
     explicit Tokenizer(TokenizerFunc f): func(f) {};
     static Tokenizer<T> init(TokenizerFunc f);
-
     std::optional<std::pair<T, TokenizerState>> run(TokenizerState s) {
       // The TokenizerFunc passes it's execution result back up the stack.
       // TokenizerFunc == std::optional<std::pair<T, TokenizerState>>
       return this->func(s);
     }
   };
+
+  // Generators for different token types
+  static Tokenizer<char> character(char expected) {
+    return Tokenizer<char>([=](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
+        if (state.currentCharacter() == expected) {
+          return std::make_tuple(expected, state.advance());
+        }
+        return std::nullopt;
+        }
+        );
+  }
 }
