@@ -20,11 +20,4 @@ namespace jerry {
   TokenizerState TokenizerState::advance() const {
     return init(input, position + 1);
   }
-
-  template<typename T>
-  Tokenizer<T> Tokenizer<T>::init(TokenizerFunc f) {
-    Tokenizer<T> toke = Tokenizer();
-    toke.func = f;
-    return toke;
-  }
 }
