@@ -8,7 +8,7 @@ TEST(TokenizerTest, TokenizerExampleTest) {
   // Creates a Tokenizer<char> with the lambda passed in.
   // The lambda attempts to read the char and if it is at the current position then advance().
   // Otherwise we do the monad thing and return nullopt.
-  auto toke = anyCharacter();
+  auto toke = character();
 
 	// State carries the position and the input string.
   TokenizerState state = TokenizerState::init("the quick brown fox jumped over the fella", 0);
@@ -59,7 +59,7 @@ TEST(TokenizerTest, ParseSentenceBindTest) {
 TEST(TokenizerTest, MapCharTest) { 
   std::string input = "the quick brown fox";
   auto state = TokenizerState::init(input, 0);
-  auto toUpper = anyCharacter().map<char>([=](char c) {
+  auto toUpper = character().map<char>([=](char c) {
     return std::toupper(c);
   });
 

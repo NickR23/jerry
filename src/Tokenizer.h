@@ -76,17 +76,13 @@ namespace jerry {
      */
     template<typename U>
     Tokenizer<U> map(std::function<U(T)> f) const {
-      return Tokenizer<U>([=, this](TokenizerState state) -> std::optional<std::pair<U, TokenizerState>> {
+      return Tokenizer<U>([f, this](TokenizerState state) -> std::optional<std::pair<U, TokenizerState>> {
           auto result = this->run(state);
           if (!result) {
             return std::nullopt;
           }
-          auto transformation = f(result->first);
-          if (!transformation) {
-            return std::nullopt;
-          }
-
-          return std::pair(transformation, result->second);
+          U transformation = f(result->first);
+          return std::make_pair(transformation, result->second);
          });
     }
   };
@@ -97,7 +93,7 @@ namespace jerry {
     return Tokenizer<T>([=](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
       auto r = x.run(state);
       if (r) {
-        return std::pair(r->first, r->second);
+        return std::make_pair(r->first, r->second);
       }
       /**
        * Cool shit: By atomically updating state we can basically try one operation then "roll back"
@@ -105,7 +101,7 @@ namespace jerry {
        */
       r = y.run(state);
       if (r) {
-        return std::pair(r->first, r->second);
+        return std::make_pair(r->first, r->second);
       }
       return std::nullopt;
     });
@@ -122,36 +118,34 @@ namespace jerry {
   }
 
 	/** Returns the same state **/
+  [[maybe_unused]]
   static Tokenizer<char> fail() {
-    return Tokenizer<char>([=](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
+    return Tokenizer<char>([=](TokenizerState) -> std::optional<std::pair<char, TokenizerState>> {
         return std::nullopt;
         }
     );
   }
 
-  static Tokenizer<char> anyCharacter() {
+  static Tokenizer<char> character(std::optional<std::function<bool(char)>> matcher = std::nullopt) {
     return Tokenizer<char>([=](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
         if (state.getPosition() >= state.getInputStringSize()) {
           return std::nullopt;
         }
 				char val = state.currentCharacter();
+        if (matcher.has_value() && !matcher.value()(val)) {
+          return std::nullopt;
+        }
         return std::make_pair(val, state.advance());
         }
     );
   }
 
+  [[maybe_unused]]
   static Tokenizer<char> braceOpen() {
-    return Tokenizer<char>([=](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
-        if (state.getPosition() >= state.getInputStringSize()) {
-          return std::nullopt;
-        }
-        auto braceTokenizer = anyCharacter().bind<char>([](char c) {
-          return c == '{' ?  pure('{') : fail();
-        });
-        auto r = braceTokenizer.run(state);
-        return r;
-        }
-    );
+    auto f = [](char c) -> bool{
+      return c == '{';
+    };
+    return character(f);
   }
 
   static Tokenizer<std::string> word() {
@@ -184,29 +178,31 @@ namespace jerry {
   }
 
   // Consumes word+whitespace sequences until position >= input.size()
+  [[maybe_unused]]
   static Tokenizer<std::vector<std::string>> sentence() {
     return Tokenizer<std::vector<std::string>>([=](TokenizerState state) -> std::optional<std::pair<std::vector<std::string>, TokenizerState>> {
       std::vector<std::string> tokens;
       Tokenizer<std::string> wordTokenizer = word();
       auto initResult = wordTokenizer.run(state);
-      if (initResult) {
-        tokens.push_back(initResult->first);
-        state = initResult->second;
-
-        while (true) {
-          auto wordWhiteSpaceSequence = whitespace().bind<std::string>([](char){
-            return word();
-          });
-          auto r = wordWhiteSpaceSequence.run(state);
-          if (!r) {
-            break;
-          }
-
-          tokens.push_back(r->first);
-          state = r->second;
-        }
-        return std::make_optional(std::make_pair(tokens, state));
+      if (!initResult) {
+        return std::nullopt;
       }
+      tokens.push_back(initResult->first);
+      state = initResult->second;
+
+      while (true) {
+        auto wordWhiteSpaceSequence = whitespace().bind<std::string>([](char){
+          return word();
+        });
+        auto r = wordWhiteSpaceSequence.run(state);
+        if (!r) {
+          break;
+        }
+
+        tokens.push_back(r->first);
+        state = r->second;
+      }
+      return std::make_optional(std::make_pair(tokens, state));
     });
   }
 }
