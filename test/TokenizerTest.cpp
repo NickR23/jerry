@@ -72,8 +72,16 @@ TEST(TokenizerTest, MapCharTest) {
 TEST(TokenizerTest, braceOpenTest) { 
   std::string input = "{{}}";
   auto state = TokenizerState::init(input, 0);
-  auto r = braceOpen().run(state);
-  ASSERT_TRUE(r);
-  EXPECT_EQ('{', r->first);
-  EXPECT_EQ(r->second.getPosition(), 1);
+  int i = 0;
+  while(true) {
+    auto r = braceOpen().run(state);
+    i++;
+    if (!r) {
+      break;
+    }
+    state = r->second;
+    EXPECT_EQ('{', r->first);
+    EXPECT_EQ(state.getPosition(), i);
+  }
+  EXPECT_EQ(state.getPosition(), 2);
 }
