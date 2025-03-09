@@ -95,7 +95,6 @@ namespace jerry {
   template<typename T, typename U>
   static Tokenizer<T> orelse(Tokenizer<T> x, Tokenizer<T> y) {
     return Tokenizer<T>([=](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
-      auto checkResult = []()
       auto r = x.run(state);
       if (r) {
         return std::pair(r->first, r->second);
