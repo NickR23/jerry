@@ -4,6 +4,7 @@
 #include <string>
 #include <functional>
 #include <cassert>
+#include <vector>
 
 namespace jerry {
   class TokenizerState {
@@ -45,25 +46,47 @@ namespace jerry {
     }
 
     // Used to sequence operations.
+    /**
+     * Bind is a mutation that uses f(T) to give a Tokenizer<U>.
+     * This allows for chaining operations together.
+     */
     template<typename U>
     Tokenizer<U> bind(std::function<Tokenizer<U>(T)> f) const {
-			assert(f != nullptr); // Add this check
       return Tokenizer<U>([=, this](TokenizerState state) -> std::optional<std::pair<U, TokenizerState>> {
-          // Run this Tokenizer
           auto result = this->run(state);
-          // If this tokenizer fails then return nullopt
           if (!result) {
             return std::nullopt;
           }
           
-          // Extract return values from this Tokenizer
           T val = result->first;
           TokenizerState newState = result->second;
 
-          // Grab the new tokenizer given the value of the current.
           Tokenizer<U> newTokenizer = f(val);
-          // Return the result of the bound Tokenizer.
           return newTokenizer.run(newState);
+         });
+    }
+
+    /** 
+     * Map is basically a transormation via f(T) -> U
+     * It uses the calling tokenizer run() to grab it's token,
+     * then it runs f on the result, giving U. No state is 
+     * changed. This could be useful for getting the lower case
+     * value of a char for example.
+     * in other words: Tokenizer<T> ---f(x)--> Tokenizer<U> 
+     */
+    template<typename U>
+    Tokenizer<U> map(std::function<U(T)> f) const {
+      return Tokenizer<U>([=, this](TokenizerState state) -> std::optional<std::pair<U, TokenizerState>> {
+          auto result = this->run(state);
+          if (!result) {
+            return std::nullopt;
+          }
+          auto transformation = f(result->first);
+          if (!transformation) {
+            return std::nullopt;
+          }
+
+          return std::pair(transformation, result->second);
          });
     }
   };
@@ -77,6 +100,7 @@ namespace jerry {
         }
     );
   }
+
   static Tokenizer<char> character() {
     return Tokenizer<char>([=](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
         if (state.getPosition() >= state.getInputStringSize()) {
@@ -117,4 +141,30 @@ namespace jerry {
     );
   }
 
+  // Consumes word+whitespace sequences until position >= input.size()
+  static Tokenizer<std::vector<std::string>> sentence() {
+    return Tokenizer<std::vector<std::string>>([=](TokenizerState state) -> std::optional<std::pair<std::vector<std::string>, TokenizerState>> {
+      std::vector<std::string> tokens;
+      Tokenizer<std::string> wordTokenizer = word();
+      auto initResult = wordTokenizer.run(state);
+      if (initResult) {
+        tokens.push_back(initResult->first);
+        state = initResult->second;
+
+        while (true) {
+          auto wordWhiteSpaceSequence = whitespace().bind<std::string>([](char){
+            return word();
+          });
+          auto r = wordWhiteSpaceSequence.run(state);
+          if (!r) {
+            break;
+          }
+
+          tokens.push_back(r->first);
+          state = r->second;
+        }
+        return std::make_optional(std::make_pair(tokens, state));
+      }
+    });
+  }
 }

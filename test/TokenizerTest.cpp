@@ -38,7 +38,7 @@ TEST(TokenizerTest, ParseWordTest) {
   EXPECT_EQ(3, result->second.getPosition());
 }
 
-TEST(TokenizerTest, ParseSentenceTest) {
+TEST(TokenizerTest, ParseSentenceBindTest) { 
   std::string input = "the quick brown fox";
   std::vector<std::string> expectedTokens = {
     "the",
@@ -46,22 +46,25 @@ TEST(TokenizerTest, ParseSentenceTest) {
     "brown",
     "fox"
   };
-  std::vector<std::string> gotTokens;
-
+  // First, parse the first word directly
   auto wordTokenizer = word();
-  auto whitespaceTokenizer = whitespace();
-  auto currentState = TokenizerState::init(input,0);
-  auto r2 = pure().run(currentState);
-  currentState = r2->second;
-  while (r2) {
-    auto r1 = wordTokenizer.run(currentState);
-    if (r1) {
-      gotTokens.push_back(r1->first);
-    }
-    currentState = r1->second;
-    r2 = whitespaceTokenizer.run(currentState);
-    currentState = r2->second;
-  }
+  auto currentState = TokenizerState::init(input, 0);
+  auto r = sentence().run(currentState);
 
-  EXPECT_EQ(expectedTokens, gotTokens);
+  ASSERT_TRUE(r);
+  EXPECT_EQ(expectedTokens, r->first);
+  EXPECT_EQ(r->second.getPosition(), input.size());
+}
+
+TEST(TokenizerTest, MapCharTest) { 
+  std::string input = "the quick brown fox";
+  auto state = TokenizerState::init(input, 0);
+  auto toUpper = character().map<char>([=](char c) {
+    return std::toupper(c);
+  });
+
+  auto r = toUpper.run(state);
+  ASSERT_TRUE(r);
+  EXPECT_EQ('T', r->first);
+  EXPECT_EQ(r->second.getPosition(), 1);
 }
