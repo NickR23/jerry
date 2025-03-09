@@ -145,10 +145,9 @@ namespace jerry {
 
   [[maybe_unused]]
   static Tokenizer<char> braceOpen() {
-    auto braceToken = [](char c) {
+    return character().bind<char>([](char c) {
       return c == '{' ? pure('{') : fail();
-    };
-    return character().bind<char>(braceToken);
+    });
   }
 
   [[maybe_unused]]
