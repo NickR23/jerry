@@ -140,6 +140,20 @@ namespace jerry {
     );
   }
 
+  static Tokenizer<char> braceOpen() {
+    return Tokenizer<char>([=](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
+        if (state.getPosition() >= state.getInputStringSize()) {
+          return std::nullopt;
+        }
+        auto braceTokenizer = character().bind<char>([](char c) {
+          return c == '{' ?  pure('{') : fail();
+        });
+        auto r = braceTokenizer.run(state);
+        return r;
+        }
+    );
+  }
+
   static Tokenizer<std::string> word() {
     return Tokenizer<std::string>([=](TokenizerState state) -> std::optional<std::pair<std::string, TokenizerState>> {
         if (state.getPosition() >= state.getInputStringSize()) {

@@ -9,11 +9,16 @@ namespace jerry {
     return TokenizerState(s, pos);
   }
 
-  size_t TokenizerState::getPosition() const {
+  size_t TokenizerState::getPosition() const noexcept {
     return position;
   }
 
-  char TokenizerState::currentCharacter() const {
+  char TokenizerState::currentCharacter() const noexcept {
+    /** 
+     *  User provided index into a string?
+     * Kowabunga! B-)
+     */ 
+
     return input[position];
   }
 

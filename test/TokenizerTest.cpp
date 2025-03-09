@@ -23,7 +23,7 @@ TEST(TokenizerTest, TokenizerExampleTest) {
 
 TEST(TokenizerTest, PureTest) {
   std::string input = "the quick brown fox";
-  auto pureToken = pure();
+  auto pureToken = pure('t');
   auto result = pureToken.run(TokenizerState::init(input, 0));
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ('t', result->first);
@@ -66,5 +66,14 @@ TEST(TokenizerTest, MapCharTest) {
   auto r = toUpper.run(state);
   ASSERT_TRUE(r);
   EXPECT_EQ('T', r->first);
+  EXPECT_EQ(r->second.getPosition(), 1);
+}
+
+TEST(TokenizerTest, braceOpenTest) { 
+  std::string input = "{{}}";
+  auto state = TokenizerState::init(input, 0);
+  auto r = braceOpen().run(state);
+  ASSERT_TRUE(r);
+  EXPECT_EQ('{', r->first);
   EXPECT_EQ(r->second.getPosition(), 1);
 }
