@@ -124,7 +124,7 @@ namespace jerry {
 	/** Returns the same state **/
   static Tokenizer<char> fail() {
     return Tokenizer<char>([=](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
-        return std::make_pair(state.currentCharacter(), state);
+        return std::nullopt;
         }
     );
   }
