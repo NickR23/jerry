@@ -108,13 +108,21 @@ namespace jerry {
         return std::pair(r->first, r->second);
       }
       return std::nullopt;
-
     });
   }
 
   // Generators for different token types
 	/** Returns the same state **/
-  static Tokenizer<char> pure() {
+  template<typename T>
+  static Tokenizer<T> pure(T value) {
+    return Tokenizer<T>([=](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
+        return std::make_pair(value, state);
+        }
+    );
+  }
+
+	/** Returns the same state **/
+  static Tokenizer<char> fail() {
     return Tokenizer<char>([=](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
         return std::make_pair(state.currentCharacter(), state);
         }
