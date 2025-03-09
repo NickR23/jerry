@@ -91,8 +91,29 @@ namespace jerry {
     }
   };
 
-  // Generators for different token types
+  // Runs Tokenizer<T> many times until it gives nullopt
+  template<typename T, typename U>
+  static Tokenizer<T> orelse(Tokenizer<T> x, Tokenizer<T> y) {
+    return Tokenizer<T>([=](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
+      auto checkResult = []()
+      auto r = x.run(state);
+      if (r) {
+        return std::pair(r->first, r->second);
+      }
+      /**
+       * Cool shit: By atomically updating state we can basically try one operation then "roll back"
+       *   the state if things blow up.
+       */
+      r = y.run(state);
+      if (r) {
+        return std::pair(r->first, r->second);
+      }
+      return std::nullopt;
 
+    });
+  }
+
+  // Generators for different token types
 	/** Returns the same state **/
   static Tokenizer<char> pure() {
     return Tokenizer<char>([=](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
