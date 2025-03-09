@@ -31,16 +31,37 @@ TEST(TokenizerTest, PureTest) {
 
 TEST(TokenizerTest, ParseWordTest) {
   std::string input = "the quick brown fox";
-  auto expectedTokens = {
-    "the",
-    "quick",
-    "brown",
-    "fox"
-  };
-
   auto wordTokenizer = word();
   auto result = wordTokenizer.run(TokenizerState::init(input, 0));
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ("the", result->first);
   EXPECT_EQ(3, result->second.getPosition());
+}
+
+TEST(TokenizerTest, ParseSentenceTest) {
+  std::string input = "the quick brown fox";
+  std::vector<std::string> expectedTokens = {
+    "the",
+    "quick",
+    "brown",
+    "fox"
+  };
+  std::vector<std::string> gotTokens;
+
+  auto wordTokenizer = word();
+  auto whitespaceTokenizer = whitespace();
+  auto currentState = TokenizerState::init(input,0);
+  auto r2 = pure().run(currentState);
+  currentState = r2->second;
+  while (r2) {
+    auto r1 = wordTokenizer.run(currentState);
+    if (r1) {
+      gotTokens.push_back(r1->first);
+    }
+    currentState = r1->second;
+    r2 = whitespaceTokenizer.run(currentState);
+    currentState = r2->second;
+  }
+
+  EXPECT_EQ(expectedTokens, gotTokens);
 }

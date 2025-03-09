@@ -100,9 +100,6 @@ namespace jerry {
 					word.push_back(val);
 					state = state.advance();
 				}
-				if (state.getPosition() >= state.getInputStringSize()) {
-					return std::nullopt;
-				}
         return std::make_pair(word, state);
         }
     );
