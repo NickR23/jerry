@@ -129,7 +129,7 @@ namespace jerry {
     );
   }
 
-  static Tokenizer<char> character() {
+  static Tokenizer<char> anyCharacter() {
     return Tokenizer<char>([=](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
         if (state.getPosition() >= state.getInputStringSize()) {
           return std::nullopt;
@@ -145,7 +145,7 @@ namespace jerry {
         if (state.getPosition() >= state.getInputStringSize()) {
           return std::nullopt;
         }
-        auto braceTokenizer = character().bind<char>([](char c) {
+        auto braceTokenizer = anyCharacter().bind<char>([](char c) {
           return c == '{' ?  pure('{') : fail();
         });
         auto r = braceTokenizer.run(state);
