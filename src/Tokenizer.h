@@ -14,12 +14,12 @@ namespace jerry {
   public:
     explicit TokenizerState(std::string s, size_t pos);
     static TokenizerState init(std::string s, size_t pos);
-    char currentCharacter() const;
-    size_t getPosition() const;
-    std::string getInputString() const {
+    char currentCharacter() const noexcept;
+    size_t getPosition() const noexcept;
+    std::string getInputString() const noexcept{
       return input;
     }
-    size_t getInputStringSize() const {
+    size_t getInputStringSize() const noexcept {
       return input.size();
     }
     TokenizerState advance() const;
