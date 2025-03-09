@@ -59,8 +59,8 @@ TEST(TokenizerTest, ParseSentenceBindTest) {
 TEST(TokenizerTest, MapCharTest) { 
   std::string input = "the quick brown fox";
   auto state = TokenizerState::init(input, 0);
-  auto toUpper = character().map<char>([=](char c) {
-    return std::toupper(c);
+  auto toUpper = character().map<char>([](char c) {
+    return static_cast<char>(std::toupper(c));
   });
 
   auto r = toUpper.run(state);

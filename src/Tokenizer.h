@@ -52,8 +52,11 @@ namespace jerry {
      */
     template<typename U>
     Tokenizer<U> bind(std::function<Tokenizer<U>(T)> f) const {
-      return Tokenizer<U>([=, this](TokenizerState state) -> std::optional<std::pair<U, TokenizerState>> {
-          auto result = this->run(state);
+      TokenizerFunc currentFunc = func;
+      auto transform = f;
+      return Tokenizer<U>([currentFunc = std::move(currentFunc), 
+                          transform = std::move(transform)](TokenizerState state) -> std::optional<std::pair<U, TokenizerState>> {
+          auto result = currentFunc(state);
           if (!result) {
             return std::nullopt;
           }
@@ -61,7 +64,7 @@ namespace jerry {
           T val = result->first;
           TokenizerState newState = result->second;
 
-          Tokenizer<U> newTokenizer = f(val);
+          Tokenizer<U> newTokenizer = transform(val);
           return newTokenizer.run(newState);
          });
     }
@@ -76,18 +79,21 @@ namespace jerry {
      */
     template<typename U>
     Tokenizer<U> map(std::function<U(T)> f) const {
-      return Tokenizer<U>([f, this](TokenizerState state) -> std::optional<std::pair<U, TokenizerState>> {
-          auto result = this->run(state);
+      auto currentFunc = func;
+      auto transform = f;
+      return Tokenizer<U>([currentFunc = std::move(currentFunc),
+        transform = std::move(transform), this](TokenizerState state) -> std::optional<std::pair<U, TokenizerState>> {
+          auto result = currentFunc(state);
           if (!result) {
             return std::nullopt;
           }
-          U transformation = f(result->first);
+          U transformation = transform(result->first);
           return std::make_pair(transformation, result->second);
          });
     }
   };
 
-  // Runs Tokenizer<T> many times until it gives nullopt
+  // Try running Tokenizer<T>. If that fails run Tokenizer<U>?
   template<typename T, typename U>
   static Tokenizer<T> orelse(Tokenizer<T> x, Tokenizer<T> y) {
     return Tokenizer<T>([=](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
@@ -126,15 +132,12 @@ namespace jerry {
     );
   }
 
-  static Tokenizer<char> character(std::optional<std::function<bool(char)>> matcher = std::nullopt) {
-    return Tokenizer<char>([=](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
+  static Tokenizer<char> character() {
+    return Tokenizer<char>([](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
         if (state.getPosition() >= state.getInputStringSize()) {
           return std::nullopt;
         }
 				char val = state.currentCharacter();
-        if (matcher.has_value() && !matcher.value()(val)) {
-          return std::nullopt;
-        }
         return std::make_pair(val, state.advance());
         }
     );
@@ -142,10 +145,17 @@ namespace jerry {
 
   [[maybe_unused]]
   static Tokenizer<char> braceOpen() {
-    auto f = [](char c) -> bool{
-      return c == '{';
+    auto braceToken = [](char c) {
+      return c == '{' ? pure('{') : fail();
     };
-    return character(f);
+    return character().bind<char>(braceToken);
+  }
+
+  [[maybe_unused]]
+  static Tokenizer<char> braceClose() {
+    return character().bind<char>([](char c) {
+      return c == '}' ? pure('}') : fail();
+    });
   }
 
   static Tokenizer<std::string> word() {
