@@ -15,7 +15,7 @@ namespace jerry {
         Colon,
         Comma
     };
-    
+
     struct JsonToken {
         JsonTokenType type;
         // Use monostate to represent tokens that don't have an associated value.
@@ -40,6 +40,23 @@ namespace jerry {
 
         static JsonToken makeStructural(JsonTokenType type) {
             return {type, std::monostate{}};
+        }
+
+        bool operator==(const JsonToken& other) const {
+            if (type != other.type) {
+                return false;
+            }
+
+            if (type == JsonTokenType::ObjectStart ||
+                type == JsonTokenType::ObjectEnd   ||
+                type == JsonTokenType::ArrayStart  ||
+                type == JsonTokenType::ArrayEnd    ||
+                type == JsonTokenType::Colon       ||
+                type == JsonTokenType::Comma       ||
+                type == JsonTokenType::Null          ) {
+                return true;
+            }
+            return value == other.value;
         }
     };
 }

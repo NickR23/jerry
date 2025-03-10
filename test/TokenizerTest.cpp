@@ -130,8 +130,10 @@ TEST(TokenizerTest, DigitTest) {
 
 TEST(TokenizerTest, ParseJsonStringTest) {
   std::string input = "   \"hello\"    \"world\"  ";
-  std::vector<std::string> expected = {"hello", "world"};
-  auto toke = manyOf(whitespace()).bind<std::string>([](std::vector<char>){
+  std::vector<JsonToken> expected = {JsonToken::fromString("hello"),
+                                     JsonToken::fromString("world")};
+
+  auto toke = manyOf(whitespace()).bind<JsonToken>([](std::vector<char>){
     return jsonString();
   });
   auto r = manyOf(toke).run(TokenizerState::init(input, 0));

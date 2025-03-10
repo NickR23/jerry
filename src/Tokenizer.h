@@ -282,18 +282,23 @@ namespace jerry {
   }
 
   [[maybe_unused]]
-  static Tokenizer<std::string> jsonString() {
+  static Tokenizer<JsonToken> jsonString() {
+    // Create the tokenizer but don't run it yet
     return doubleQuote().bind<std::string>([](char) {
       return manyOf<char>(character().bind<char>([](char c){
         return isNotEqual<char>(c, '"');
       })).bind<std::string>([](std::vector<char> chars){
-        return pure(std::string(chars.begin(), chars.end())).bind<std::string>([](std::string s){
-          // Consume and discard the double quote at the end.
-          return doubleQuote().map<std::string>([s](char) {
-            return s;
-          });
+        // Create a string from the characters
+        std::string s(chars.begin(), chars.end());
+        
+        // Consume closing quote
+        return doubleQuote().map<std::string>([s](char) {
+          return s;
         });
       });
+    }).map<JsonToken>([](std::string s) {
+      // Convert string to JsonToken
+      return JsonToken::fromString(s);
     });
   }
 
