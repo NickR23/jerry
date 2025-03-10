@@ -91,7 +91,9 @@ namespace jerry {
     }
   };
 
-  // Try running Tokenizer<T>. If that fails run Tokenizer<U>?
+  /** 
+   * Tries to run x. If x returns nullopt run y.
+   */
   template<typename T, typename U>
   static Tokenizer<T> orelse(Tokenizer<T> x, Tokenizer<T> y) {
     return Tokenizer<T>([=](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
@@ -108,6 +110,22 @@ namespace jerry {
         return std::make_pair(r->first, r->second);
       }
       return std::nullopt;
+    });
+  }
+
+  template<typename T>
+  static Tokenizer<std::vector<T>> manyOf(Tokenizer<T> x) {
+    return Tokenizer<std::vector<T>>([x](TokenizerState state) -> std::optional<std::pair<std::vector<T>, TokenizerState>> {
+      std::vector<T> gotTokens;
+      while(true) {
+        auto r = x.run(state);
+        if (!r) {
+          break;
+        }
+        gotTokens.push_back(r->first);
+        state = r->second;
+      }
+      return std::make_pair(gotTokens, state);
     });
   }
 

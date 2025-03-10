@@ -69,7 +69,7 @@ TEST(TokenizerTest, MapCharTest) {
   EXPECT_EQ(r->second.getPosition(), 1);
 }
 
-TEST(TokenizerTest, braceOpenTest) { 
+TEST(TokenizerTest, BraceOpenTest) { 
   std::string input = "{{}}";
   auto state = TokenizerState::init(input, 0);
   int i = 0;
@@ -86,7 +86,7 @@ TEST(TokenizerTest, braceOpenTest) {
   EXPECT_EQ(state.getPosition(), 2);
 }
 
-TEST(TokenizerTest, orElseTest) { 
+TEST(TokenizerTest, OrElseTest) { 
   std::string input = "{{}}";
   std::vector<char> expectedTokens = {
     '{',
@@ -107,4 +107,13 @@ TEST(TokenizerTest, orElseTest) {
   }
   EXPECT_EQ(state.getPosition(), 4);
   EXPECT_EQ(gotTokens, expectedTokens);
+}
+
+TEST(TokenizerTest, ManyOfTest) {
+  std::string input = "abcdefg";
+  std::vector<char> expectedTokens = {'a','b','c','d','e','f','g'};
+  auto allCharsTokenizer = manyOf(character());
+  auto r = allCharsTokenizer.run(TokenizerState::init(input, 0));
+  ASSERT_TRUE(r.has_value());
+  EXPECT_EQ(r->first, expectedTokens);
 }
