@@ -141,6 +141,12 @@ namespace jerry {
     );
   }
 
+  static Tokenizer<char> whitespace() {
+    return character().bind<char>([](char c) {
+      return c == ' ' ? pure(' ') : fail();
+    });
+  }
+
   [[maybe_unused]]
   static Tokenizer<char> braceOpen() {
     return character().bind<char>([](char c) {
@@ -200,17 +206,6 @@ namespace jerry {
     );
   }
 
-  static Tokenizer<char> whitespace() {
-    return Tokenizer<char>([=](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
-        if (state.getPosition() >= state.getInputStringSize() ||
-						state.currentCharacter() != ' ') {
-          return std::nullopt;
-        }
-				char val = state.currentCharacter();
-        return std::make_pair(val, state.advance());
-        }
-    );
-  }
 
   // Consumes word+whitespace sequences until position >= input.size()
   [[maybe_unused]]
