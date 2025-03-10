@@ -283,7 +283,6 @@ namespace jerry {
 
   [[maybe_unused]]
   static Tokenizer<JsonToken> jsonString() {
-    // Create the tokenizer but don't run it yet
     return doubleQuote().bind<std::string>([](char) {
       return manyOf<char>(character().bind<char>([](char c){
         return isNotEqual<char>(c, '"');
@@ -301,5 +300,4 @@ namespace jerry {
       return JsonToken::fromString(s);
     });
   }
-
 }
