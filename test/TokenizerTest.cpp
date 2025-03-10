@@ -88,6 +88,13 @@ TEST(TokenizerTest, braceOpenTest) {
 
 TEST(TokenizerTest, orElseTest) { 
   std::string input = "{{}}";
+  std::vector<char> expectedTokens = {
+    '{',
+    '{',
+    '}',
+    '}',
+  };
+  std::vector<char> gotTokens;
   auto state = TokenizerState::init(input, 0);
   auto eitherBraceTokenizer = orelse<char,char>(braceOpen(), braceClose());
   while(true) {
@@ -95,7 +102,9 @@ TEST(TokenizerTest, orElseTest) {
     if (!r) {
       break;
     }
+    gotTokens.push_back(r->first);
     state = r->second;
   }
   EXPECT_EQ(state.getPosition(), 4);
+  EXPECT_EQ(gotTokens, expectedTokens);
 }
