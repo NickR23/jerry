@@ -75,7 +75,7 @@ namespace jerry {
      * then it runs f on the result, giving U. No state is 
      * changed. This could be useful for getting the lower case
      * value of a char for example.
-     * in other words: Tokenizer<T> ---f(x)--> Tokenizer<U> 
+     * in other words: f(T)--> Tokenizer<U> 
      */
     template<typename U>
     Tokenizer<U> map(std::function<U(T)> f) const {
@@ -144,7 +144,7 @@ namespace jerry {
   static Tokenizer<T> match(T value, std::function<bool(T)> matcher) {
     return Tokenizer<T>([matcher = std::move(matcher), value](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
       if (matcher(value)) {
-        return std::make_pair(value, state);
+        return pure<T>(value).run(state);
       }
       return std::nullopt;
       }
@@ -157,6 +157,13 @@ namespace jerry {
       return val == other;
     };
     return match<T>(value, equalityChecker);
+  }
+
+  static Tokenizer<char> isDigit(char c) {
+    auto digitChecker = [](char c) {
+      return c >= '0' && c <= '9';
+    };
+    return match<char>(c, digitChecker);
   }
 
 	/** Returns the same state **/
@@ -180,15 +187,12 @@ namespace jerry {
   }
 
   static Tokenizer<uint> digit() {
-    auto isDigit = [](char c) {
-      return c >= '0' && c <= '9';
-    };
     auto asDigit = [](char c) {
       return static_cast<uint>(c - '0');
     };
     
-    return character().bind<uint>([isDigit, asDigit](char c) {
-      return match<char>(c, isDigit).map<uint>(asDigit);
+    return character().bind<uint>([asDigit](char c) {
+      return isDigit(c).map<uint>(asDigit);
     });
   }
 
