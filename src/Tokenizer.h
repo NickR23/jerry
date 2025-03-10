@@ -111,12 +111,6 @@ namespace jerry {
     });
   }
 
-  // template<typename T>
-  // static Tokenizer<T> manyOf(Tokenizer<T> x) {
-  //   return Tokenizer<T>([])
-
-  // }
-
   // Generators for different token types
 	/** Returns the same state **/
   template<typename T>
@@ -158,6 +152,20 @@ namespace jerry {
   static Tokenizer<char> braceClose() {
     return character().bind<char>([](char c) {
       return c == '}' ? pure('}') : fail();
+    });
+  }
+
+  [[maybe_unused]]
+  static Tokenizer<char> bracketOpen() {
+    return character().bind<char>([](char c) {
+      return c == '[' ? pure('[') : fail();
+    });
+  }
+
+  [[maybe_unused]]
+  static Tokenizer<char> bracketClose() {
+    return character().bind<char>([](char c) {
+      return c == ']' ? pure(']') : fail();
     });
   }
 
