@@ -135,8 +135,28 @@ namespace jerry {
   static Tokenizer<T> pure(T value) {
     return Tokenizer<T>([=](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
         return std::make_pair(value, state);
-        }
+      }
     );
+  }
+
+	/** Returns the same state **/
+  template<typename T>
+  static Tokenizer<T> match(T value, std::function<bool(T)> matcher) {
+    return Tokenizer<T>([matcher = std::move(matcher), value](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
+      if (matcher(value)) {
+        return std::make_pair(value, state);
+      }
+      return std::nullopt;
+      }
+    );
+  }
+
+  template<typename T>
+  static Tokenizer<T> isEqual(T value, T other) {
+    auto equalityChecker = [other](T val) {
+      return val == other;
+    };
+    return match<T>(value, equalityChecker);
   }
 
 	/** Returns the same state **/
@@ -166,57 +186,57 @@ namespace jerry {
     auto asDigit = [](char c) {
       return static_cast<uint>(c - '0');
     };
-
+    
     return character().bind<uint>([isDigit, asDigit](char c) {
-      return isDigit(c) ? pure(asDigit(c)) : fail<uint>();
+      return match<char>(c, isDigit).map<uint>(asDigit);
     });
   }
 
   static Tokenizer<char> whitespace() {
     return character().bind<char>([](char c) {
-      return c == ' ' ? pure(' ') : fail<char>();
+      return isEqual(c, ' ');
     });
   }
 
   [[maybe_unused]]
   static Tokenizer<char> braceOpen() {
     return character().bind<char>([](char c) {
-      return c == '{' ? pure('{') : fail<char>();
+      return isEqual(c, '{');
     });
   }
 
   [[maybe_unused]]
   static Tokenizer<char> braceClose() {
     return character().bind<char>([](char c) {
-      return c == '}' ? pure('}') : fail<char>();
+      return isEqual(c, '}');
     });
   }
 
   [[maybe_unused]]
   static Tokenizer<char> bracketOpen() {
     return character().bind<char>([](char c) {
-      return c == '[' ? pure('[') : fail<char>();
+      return isEqual(c, '[');
     });
   }
 
   [[maybe_unused]]
   static Tokenizer<char> bracketClose() {
     return character().bind<char>([](char c) {
-      return c == ']' ? pure(']') : fail<char>();
+      return isEqual(c, ']');
     });
   }
 
   [[maybe_unused]]
   static Tokenizer<char> colon() {
     return character().bind<char>([](char c) {
-      return c == ':' ? pure(':') : fail<char>();
+      return isEqual(c, ':');
     });
   }
 
   [[maybe_unused]]
   static Tokenizer<char> comma() {
     return character().bind<char>([](char c) {
-      return c == ',' ? pure(',') : fail<char>();
+      return isEqual(c, ',');
     });
   }
 
