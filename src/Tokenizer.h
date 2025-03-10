@@ -79,10 +79,8 @@ namespace jerry {
      */
     template<typename U>
     Tokenizer<U> map(std::function<U(T)> f) const {
-      auto currentFunc = func;
-      auto transform = f;
-      return Tokenizer<U>([currentFunc = std::move(currentFunc),
-        transform = std::move(transform), this](TokenizerState state) -> std::optional<std::pair<U, TokenizerState>> {
+      return Tokenizer<U>([currentFunc = std::move(func),
+        transform = std::move(f), this](TokenizerState state) -> std::optional<std::pair<U, TokenizerState>> {
           auto result = currentFunc(state);
           if (!result) {
             return std::nullopt;
@@ -103,7 +101,7 @@ namespace jerry {
       }
       /**
        * Cool shit: By atomically updating state we can basically try one operation then "roll back"
-       *   the state if things blow up.
+       *   the original state if things blow up.
        */
       r = y.run(state);
       if (r) {
@@ -112,6 +110,12 @@ namespace jerry {
       return std::nullopt;
     });
   }
+
+  // template<typename T>
+  // static Tokenizer<T> manyOf(Tokenizer<T> x) {
+  //   return Tokenizer<T>([])
+
+  // }
 
   // Generators for different token types
 	/** Returns the same state **/
