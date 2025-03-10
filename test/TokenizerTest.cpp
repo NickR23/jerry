@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
-#include "Tokenizer.h"
 #include <iostream>
+
+#include "Tokenizer.h"
+
 using namespace jerry;
 
 TEST(TokenizerTest, TokenizerExampleTest) {
@@ -121,8 +123,18 @@ TEST(TokenizerTest, ManyOfTest) {
 TEST(TokenizerTest, DigitTest) {
   std::string input = "0123456789";
   std::vector<uint> expectedTokens = {0,1,2,3,4,5,6,7,8,9};
-  auto allCharsTokenizer = manyOf(digit());
-  auto r = allCharsTokenizer.run(TokenizerState::init(input, 0));
+  auto r = manyOf(digit()).run(TokenizerState::init(input, 0));
   ASSERT_TRUE(r.has_value());
   EXPECT_EQ(r->first, expectedTokens);
+}
+
+TEST(TokenizerTest, ParseJsonStringTest) {
+  std::string input = "   \"hello\"    \"world\"  ";
+  std::vector<std::string> expected = {"hello", "world"};
+  auto toke = manyOf(whitespace()).bind<std::string>([](std::vector<char>){
+    return jsonString();
+  });
+  auto r = manyOf(toke).run(TokenizerState::init(input, 0));
+  ASSERT_TRUE(r.has_value());
+  EXPECT_EQ(r->first, expected);
 }

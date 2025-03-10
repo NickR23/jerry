@@ -6,6 +6,8 @@
 #include <cassert>
 #include <vector>
 
+#include "JsonToken.h"
+
 namespace jerry {
   class TokenizerState {
   private:
@@ -159,6 +161,14 @@ namespace jerry {
     return match<T>(value, equalityChecker);
   }
 
+  template<typename T>
+  static Tokenizer<T> isNotEqual(T value, T other) {
+    auto equalityChecker = [other](T val) {
+      return val != other;
+    };
+    return match<T>(value, equalityChecker);
+  }
+
   static Tokenizer<char> isDigit(char c) {
     auto digitChecker = [](char c) {
       return c >= '0' && c <= '9';
@@ -244,6 +254,13 @@ namespace jerry {
     });
   }
 
+  [[maybe_unused]]
+  static Tokenizer<char> doubleQuote() {
+    return character().bind<char>([](char c) {
+      return isEqual(c, '"');
+    });
+  }
+
   static Tokenizer<std::string> word() {
     return manyOf<char>(character().bind<char>([](char c){
       return (c == ' ' || c == '\t' || c == '\n') ? fail<char>() : pure(c);
@@ -263,4 +280,21 @@ namespace jerry {
     });
     return manyOf<std::string>(wordFollowedBySpace);
   }
+
+  [[maybe_unused]]
+  static Tokenizer<std::string> jsonString() {
+    return doubleQuote().bind<std::string>([](char) {
+      return manyOf<char>(character().bind<char>([](char c){
+        return isNotEqual<char>(c, '"');
+      })).bind<std::string>([](std::vector<char> chars){
+        return pure(std::string(chars.begin(), chars.end())).bind<std::string>([](std::string s){
+          // Consume and discard the double quote at the end.
+          return doubleQuote().map<std::string>([s](char) {
+            return s;
+          });
+        });
+      });
+    });
+  }
+
 }
