@@ -96,7 +96,7 @@ TEST(TokenizerTest, OrElseTest) {
   };
   std::vector<char> gotTokens;
   auto state = TokenizerState::init(input, 0);
-  auto eitherBraceTokenizer = orelse<char,char>(braceOpen(), braceClose());
+  auto eitherBraceTokenizer = orElse<char,char>(braceOpen(), braceClose());
   while(true) {
     auto r = eitherBraceTokenizer.run(state);
     if (!r) {
