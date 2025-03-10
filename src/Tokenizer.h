@@ -169,6 +169,20 @@ namespace jerry {
     });
   }
 
+  [[maybe_unused]]
+  static Tokenizer<char> colon() {
+    return character().bind<char>([](char c) {
+      return c == ':' ? pure(':') : fail();
+    });
+  }
+
+  [[maybe_unused]]
+  static Tokenizer<char> comma() {
+    return character().bind<char>([](char c) {
+      return c == ',' ? pure(',') : fail();
+    });
+  }
+
   static Tokenizer<std::string> word() {
     return Tokenizer<std::string>([=](TokenizerState state) -> std::optional<std::pair<std::string, TokenizerState>> {
         if (state.getPosition() >= state.getInputStringSize()) {
