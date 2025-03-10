@@ -117,3 +117,12 @@ TEST(TokenizerTest, ManyOfTest) {
   ASSERT_TRUE(r.has_value());
   EXPECT_EQ(r->first, expectedTokens);
 }
+
+TEST(TokenizerTest, DigitTest) {
+  std::string input = "0123456789";
+  std::vector<uint> expectedTokens = {0,1,2,3,4,5,6,7,8,9};
+  auto allCharsTokenizer = manyOf(digit());
+  auto r = allCharsTokenizer.run(TokenizerState::init(input, 0));
+  ASSERT_TRUE(r.has_value());
+  EXPECT_EQ(r->first, expectedTokens);
+}
