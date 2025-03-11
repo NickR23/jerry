@@ -14,11 +14,6 @@ namespace jerry {
   }
 
   char TokenizerState::currentCharacter() const noexcept {
-    /** 
-     *  User provided index into a string?
-     * Kowabunga! B-)
-     */ 
-
     return input[position];
   }
 
