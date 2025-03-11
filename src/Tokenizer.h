@@ -47,10 +47,16 @@ namespace jerry {
       return this->func(s);
     }
 
-    // Used to sequence operations.
     /**
-     * Bind is a mutation that uses f(T) to give a Tokenizer<U>.
-     * This allows for chaining operations together.
+     * @brief Binds a transformation function to the current Tokenizer.
+     * 
+     * Allows chaining of Tokenizers by applying a transformation function
+     * to the result of the current Tokenizer. The transformation function takes a value
+     * of type T and returns a new Tokenizer of type U.
+     * 
+     * @tparam U The type of the value produced by the new Tokenizer.
+     * @param f A transformation function that takes a value of type T and returns a Tokenizer of type U.
+     * @return A new Tokenizer of type U that applies the transformation function to the result of the current Tokenizer.
      */
     template<typename U>
     Tokenizer<U> bind(std::function<Tokenizer<U>(T)> f) const {
@@ -71,13 +77,12 @@ namespace jerry {
          });
     }
 
-    /** 
-     * Map is basically a transormation via f(T) -> U
-     * It uses the calling tokenizer run() to grab it's token,
-     * then it runs f on the result, giving U. No state is 
-     * changed. This could be useful for getting the lower case
-     * value of a char for example.
-     * in other words: f(T)--> Tokenizer<U> 
+    /**
+     * @brief Transforms the result of the current tokenizer.
+     * 
+     * @tparam U The type of the transformed result.
+     * @param f A function that takes a value of type T and returns a value of type U.
+     * @return Tokenizer<U> A new Tokenizer that applies the transformation function.
      */
     template<typename U>
     Tokenizer<U> map(std::function<U(T)> f) const {
@@ -93,8 +98,17 @@ namespace jerry {
     }
   };
 
-  /** 
-   * Tries to run x. If x returns nullopt run y.
+  /**
+   * @brief Tries the first tokenizer and if it fails, trying the second tokenizer.
+   * 
+   * @tparam T The type of the token produced by the tokenizers (x and y).
+   * @param x The first Tokenizer to try.
+   * @param y The second Tokenizer to try if the first one fails.
+   * @return A new Tokenizer that represents the combination of the two tokenizers.
+   * 
+   * This function attempts to run the first tokenizer with the given state. If the first tokenizer
+   * succeeds, it returns the result. If the first tokenizer fails, it attempts to run the second tokenizer. If the second tokenizer succeeds, it returns the result.
+   * If both tokenizers fail, it returns nullopt.
    */
   template<typename T>
   static Tokenizer<T> orElse(Tokenizer<T> x, Tokenizer<T> y) {
@@ -103,10 +117,6 @@ namespace jerry {
       if (r) {
         return std::make_pair(r->first, r->second);
       }
-      /**
-       * Cool shit: By atomically updating state we can basically try one operation then "roll back"
-       *   the original state if things blow up.
-       */
       r = y.run(state);
       if (r) {
         return std::make_pair(r->first, r->second);
@@ -115,6 +125,18 @@ namespace jerry {
     });
   }
 
+
+  /**
+   * @brief Creates a tokenizer that matches zero or more occurrences of the given tokenizer.
+   * 
+   * Returns a tokenizer that repeatedly applies the given tokenizer `x` 
+   * and collects the results into a vector. The process stops when the tokenizer `x` 
+   * fails to match or the end of the input string is reached.
+   * 
+   * @tparam T The type of tokens produced by the tokenizer `x`.
+   * @param x The tokenizer to be applied repeatedly.
+   * @return A tokenizer that produces a vector of tokens matched by the given tokenizer `x`.
+   */
   template<typename T>
   static Tokenizer<std::vector<T>> manyOf(Tokenizer<T> x) {
     return Tokenizer<std::vector<T>>([x](TokenizerState state) -> std::optional<std::pair<std::vector<T>, TokenizerState>> {
@@ -132,6 +154,7 @@ namespace jerry {
   }
 
   // Generators for different token types
+
 	/** Returns the same state **/
   template<typename T>
   static Tokenizer<T> pure(T value) {

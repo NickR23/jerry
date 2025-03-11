@@ -61,11 +61,9 @@ namespace jerry {
             return value == other.value;
         }
         
-        // String representation for debugging and printing
+        // String representation for debuggin 
         std::string toString() const {
             std::stringstream ss;
-            
-            // Print token type
             switch(type) {
                 case JsonTokenType::ObjectStart: ss << "ObjectStart"; break;
                 case JsonTokenType::ObjectEnd: ss << "ObjectEnd"; break;
