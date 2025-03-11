@@ -89,7 +89,7 @@ namespace jerry {
     template<typename U>
     Tokenizer<U> map(std::function<U(T)> f) const {
       return Tokenizer<U>([currentFunc = std::move(func),
-        transform = std::move(f), this](TokenizerState state) -> std::optional<std::pair<U, TokenizerState>> {
+        transform = std::move(f)](TokenizerState state) -> std::optional<std::pair<U, TokenizerState>> {
           auto result = currentFunc(state);
           if (!result) {
             return std::nullopt;
@@ -144,7 +144,7 @@ namespace jerry {
     return Tokenizer<std::vector<T>>([x](TokenizerState state) -> std::optional<std::pair<std::vector<T>, TokenizerState>> {
       std::vector<T> gotTokens;
       while(true) {
-        if (!r) {
+        if (state.getPosition() >= state.getInputStringSize()) {
           break;
         }
         auto r = x.run(state);
@@ -224,6 +224,7 @@ namespace jerry {
     );
   }
 
+[[maybe_unused]]
   static Tokenizer<uint> digit() {
     auto asDigit = [](char c) {
       return static_cast<uint>(c - '0');
@@ -312,7 +313,7 @@ namespace jerry {
   [[maybe_unused]]
   static Tokenizer<JsonToken> objectStart() {
     return character().bind<JsonToken>([](char c) {
-      return isEqual(c, '{').bind<JsonToken>([](char c){
+      return isEqual(c, '{').bind<JsonToken>([](char){
         return pure(JsonToken::makeStructural(JsonTokenType::ObjectStart));
       });
     });
@@ -321,7 +322,7 @@ namespace jerry {
   [[maybe_unused]]
   static Tokenizer<JsonToken> objectEnd() {
     return character().bind<JsonToken>([](char c) {
-      return isEqual(c, '}').bind<JsonToken>([](char c){
+      return isEqual(c, '}').bind<JsonToken>([](char){
         return pure(JsonToken::makeStructural(JsonTokenType::ObjectEnd));
       });
     });
@@ -330,7 +331,7 @@ namespace jerry {
   [[maybe_unused]]
   static Tokenizer<JsonToken> arrayStart() {
     return character().bind<JsonToken>([](char c) {
-      return isEqual(c, '[').bind<JsonToken>([](char c){
+      return isEqual(c, '[').bind<JsonToken>([](char){
         return pure(JsonToken::makeStructural(JsonTokenType::ArrayStart));
       });
     });
@@ -339,7 +340,7 @@ namespace jerry {
   [[maybe_unused]]
   static Tokenizer<JsonToken> arrayEnd() {
     return character().bind<JsonToken>([](char c) {
-      return isEqual(c, ']').bind<JsonToken>([](char c){
+      return isEqual(c, ']').bind<JsonToken>([](char){
         return pure(JsonToken::makeStructural(JsonTokenType::ArrayEnd));
       });
     });
