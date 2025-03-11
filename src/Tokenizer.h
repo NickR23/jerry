@@ -224,6 +224,17 @@ namespace jerry {
     );
   }
 
+  static Tokenizer<char> expectChar(char expected) {
+    return Tokenizer<char>([expected](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
+        if (state.getPosition() >= state.getInputStringSize() ||
+            state.currentCharacter() != expected) {
+          return std::nullopt;
+        }
+        return std::make_pair(expected, state.advance());
+        }
+    );
+  }
+
 [[maybe_unused]]
   static Tokenizer<uint> digit() {
     auto asDigit = [](char c) {
@@ -236,58 +247,42 @@ namespace jerry {
   }
 
   static Tokenizer<char> whitespace() {
-    return character().bind<char>([](char c) {
-      return isEqual(c, ' ');
-    });
+    return expectChar(' ');
   }
 
   [[maybe_unused]]
   static Tokenizer<char> braceOpen() {
-    return character().bind<char>([](char c) {
-      return isEqual(c, '{');
-    });
+    return expectChar('{');
   }
 
   [[maybe_unused]]
   static Tokenizer<char> braceClose() {
-    return character().bind<char>([](char c) {
-      return isEqual(c, '}');
-    });
+    return expectChar('}');
   }
 
   [[maybe_unused]]
   static Tokenizer<char> bracketOpen() {
-    return character().bind<char>([](char c) {
-      return isEqual(c, '[');
-    });
+    return expectChar('[');
   }
 
   [[maybe_unused]]
   static Tokenizer<char> bracketClose() {
-    return character().bind<char>([](char c) {
-      return isEqual(c, ']');
-    });
+    return expectChar(']');
   }
 
   [[maybe_unused]]
   static Tokenizer<char> colon() {
-    return character().bind<char>([](char c) {
-      return isEqual(c, ':');
-    });
+    return expectChar(':');
   }
 
   [[maybe_unused]]
   static Tokenizer<char> comma() {
-    return character().bind<char>([](char c) {
-      return isEqual(c, ',');
-    });
+    return expectChar(',');
   }
 
   [[maybe_unused]]
   static Tokenizer<char> doubleQuote() {
-    return character().bind<char>([](char c) {
-      return isEqual(c, '"');
-    });
+    return expectChar('"');
   }
 
   static Tokenizer<std::string> word() {
@@ -349,19 +344,15 @@ namespace jerry {
   [[maybe_unused]]
   static Tokenizer<JsonToken> jsonString() {
     return doubleQuote().bind<std::string>([](char) {
-      return manyOf<char>(character().bind<char>([](char c){
-        return isNotEqual<char>(c, '"');
-      })).bind<std::string>([](std::vector<char> chars){
-        // Create a string from the characters
+      return manyOf<char>(character().bind<char>([](char c) {
+        return c == '"' ? fail<char>() : pure(c);
+      })).bind<std::string>([](std::vector<char> chars) {
         std::string s(chars.begin(), chars.end());
-        
-        // Consume closing quote
         return doubleQuote().map<std::string>([s](char) {
           return s;
         });
       });
     }).map<JsonToken>([](std::string s) {
-      // Convert string to JsonToken
       return JsonToken::fromString(s);
     });
   }
