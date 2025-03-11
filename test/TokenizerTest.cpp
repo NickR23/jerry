@@ -98,7 +98,7 @@ TEST(TokenizerTest, OrElseTest) {
   };
   std::vector<char> gotTokens;
   auto state = TokenizerState::init(input, 0);
-  auto eitherBraceTokenizer = orElse<char,char>(braceOpen(), braceClose());
+  auto eitherBraceTokenizer = orElse<char>(braceOpen(), braceClose());
   while(true) {
     auto r = eitherBraceTokenizer.run(state);
     if (!r) {
@@ -137,6 +137,25 @@ TEST(TokenizerTest, ParseJsonStringTest) {
     return jsonString();
   });
   auto r = manyOf(toke).run(TokenizerState::init(input, 0));
+  ASSERT_TRUE(r.has_value());
+  EXPECT_EQ(r->first, expected);
+}
+
+TEST(TokenizerTest, StructuralTokenTest) {
+  std::string input = "{[]}";
+  std::vector<JsonToken> expected = {
+                                    JsonToken::makeStructural(JsonTokenType::ObjectStart),
+                                    JsonToken::makeStructural(JsonTokenType::ArrayStart),
+                                    JsonToken::makeStructural(JsonTokenType::ArrayEnd),
+                                    JsonToken::makeStructural(JsonTokenType::ObjectEnd)
+  };
+
+  auto objectTokenizer = orElse(objectStart(), objectEnd());
+  auto arrayTokenizer = orElse(arrayStart(), arrayEnd());
+
+  auto structuralTokenizer = orElse(objectTokenizer, arrayTokenizer);
+
+  auto r = manyOf(structuralTokenizer).run(TokenizerState::init(input, 0));
   ASSERT_TRUE(r.has_value());
   EXPECT_EQ(r->first, expected);
 }

@@ -96,9 +96,9 @@ namespace jerry {
   /** 
    * Tries to run x. If x returns nullopt run y.
    */
-  template<typename T, typename U>
-  static Tokenizer<U> orElse(Tokenizer<T> x, Tokenizer<T> y) {
-    return Tokenizer<U>([=](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
+  template<typename T>
+  static Tokenizer<T> orElse(Tokenizer<T> x, Tokenizer<T> y) {
+    return Tokenizer<T>([=](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
       auto r = x.run(state);
       if (r) {
         return std::make_pair(r->first, r->second);
@@ -279,6 +279,42 @@ namespace jerry {
       });
     });
     return manyOf<std::string>(wordFollowedBySpace);
+  }
+
+  [[maybe_unused]]
+  static Tokenizer<JsonToken> objectStart() {
+    return character().bind<JsonToken>([](char c) {
+      return isEqual(c, '{').bind<JsonToken>([](char c){
+        return pure(JsonToken::makeStructural(JsonTokenType::ObjectStart));
+      });
+    });
+  }
+
+  [[maybe_unused]]
+  static Tokenizer<JsonToken> objectEnd() {
+    return character().bind<JsonToken>([](char c) {
+      return isEqual(c, '}').bind<JsonToken>([](char c){
+        return pure(JsonToken::makeStructural(JsonTokenType::ObjectEnd));
+      });
+    });
+  }
+
+  [[maybe_unused]]
+  static Tokenizer<JsonToken> arrayStart() {
+    return character().bind<JsonToken>([](char c) {
+      return isEqual(c, '[').bind<JsonToken>([](char c){
+        return pure(JsonToken::makeStructural(JsonTokenType::ArrayStart));
+      });
+    });
+  }
+
+  [[maybe_unused]]
+  static Tokenizer<JsonToken> arrayEnd() {
+    return character().bind<JsonToken>([](char c) {
+      return isEqual(c, ']').bind<JsonToken>([](char c){
+        return pure(JsonToken::makeStructural(JsonTokenType::ArrayEnd));
+      });
+    });
   }
 
   [[maybe_unused]]
