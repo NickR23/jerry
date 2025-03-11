@@ -159,3 +159,20 @@ TEST(TokenizerTest, StructuralTokenTest) {
   ASSERT_TRUE(r.has_value());
   EXPECT_EQ(r->first, expected);
 }
+
+TEST(TokenizerTest, NullTokenTest) {
+  std::string input = "null";
+  auto r = null().run(TokenizerState::init(input, 0));
+  ASSERT_TRUE(r.has_value());
+  EXPECT_EQ(r->first.type, JsonTokenType::Null);
+}
+
+TEST(TokenizerTest, BoolTokenTest) {
+  auto r = boolean().run(TokenizerState::init("true", 0));
+  ASSERT_TRUE(r.has_value());
+  EXPECT_EQ(r->first, JsonToken::fromBool(true));
+
+  r = boolean().run(TokenizerState::init("false", 0));
+  ASSERT_TRUE(r.has_value());
+  EXPECT_EQ(r->first, JsonToken::fromBool(false));
+}

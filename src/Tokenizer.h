@@ -235,6 +235,20 @@ namespace jerry {
     );
   }
 
+  static Tokenizer<std::string> expectString(std::string expected) {
+    return Tokenizer<std::string>([expected = std::move(expected)](TokenizerState state) -> std::optional<std::pair<std::string, TokenizerState>> {
+      for (size_t i = 0; i < expected.size(); i++) {
+        auto r = expectChar(expected[i]).run(state);
+        if (!r) {
+          return std::nullopt;
+        }
+        state = r->second;
+      }
+      return std::make_pair(expected, state);
+    }
+    );
+  }
+
 [[maybe_unused]]
   static Tokenizer<uint> digit() {
     auto asDigit = [](char c) {
@@ -283,6 +297,23 @@ namespace jerry {
   [[maybe_unused]]
   static Tokenizer<char> doubleQuote() {
     return expectChar('"');
+  }
+
+  [[maybe_unused]]
+  static Tokenizer<JsonToken> null() {
+    return expectString("null").map<JsonToken>([](std::string){
+        return JsonToken::makeStructural(JsonTokenType::Null);
+      });
+  }
+
+  [[maybe_unused]]
+  static Tokenizer<JsonToken> boolean() {
+    return orElse(expectString("true"), expectString("false")).map<JsonToken>([](std::string s){
+      auto trueOrFalse = [](std::string s) {
+        return true ? s == "true" : false;
+      };
+      return JsonToken::fromBool(trueOrFalse(s));
+    });
   }
 
   static Tokenizer<std::string> word() {
