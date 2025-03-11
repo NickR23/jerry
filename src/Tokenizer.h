@@ -144,8 +144,11 @@ namespace jerry {
     return Tokenizer<std::vector<T>>([x](TokenizerState state) -> std::optional<std::pair<std::vector<T>, TokenizerState>> {
       std::vector<T> gotTokens;
       while(true) {
+        if (!r) {
+          break;
+        }
         auto r = x.run(state);
-        if (!r || state.getPosition() >= state.getInputStringSize()) {
+        if (!r) {
           break;
         }
         gotTokens.push_back(r->first);
