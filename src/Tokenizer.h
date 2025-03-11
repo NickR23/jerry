@@ -34,7 +34,10 @@ namespace jerry {
     using TokenizerFunc = std::function<std::optional<std::pair<T, TokenizerState>>(TokenizerState)>;
     TokenizerFunc func;
   public:
-    explicit Tokenizer(TokenizerFunc f): func(f) {};
+    explicit Tokenizer(TokenizerFunc f): func(f) {
+			assert(this->func != nullptr);
+    };
+
     static Tokenizer<T> init(TokenizerFunc f) {
       Tokenizer<T> toke = Tokenizer(f);
       return toke;
@@ -43,7 +46,6 @@ namespace jerry {
     std::optional<std::pair<T, TokenizerState>> run(TokenizerState s) const {
       // The TokenizerFunc passes it's execution result back up the stack.
       // TokenizerFunc == std::optional<std::pair<T, TokenizerState>>
-			assert(this->func != nullptr);
       return this->func(s);
     }
 
