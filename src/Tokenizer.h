@@ -378,8 +378,8 @@ namespace jerry {
       return manyOf<char>(character().bind<char>([](char c) {
         return c == '"' ? fail<char>() : pure(c);
       })).bind<std::string>([](std::vector<char> chars) {
-        std::string s(chars.begin(), chars.end());
-        return doubleQuote().map<std::string>([s](char) {
+        return doubleQuote().map<std::string>([chars = std::move(chars)](char) {
+          std::string s(chars.begin(), chars.end());
           return s;
         });
       });
