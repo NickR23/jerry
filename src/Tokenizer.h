@@ -114,7 +114,7 @@ namespace jerry {
    */
   template<typename T>
   static Tokenizer<T> orElse(Tokenizer<T> x, Tokenizer<T> y) {
-    return Tokenizer<T>([=](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
+    return Tokenizer<T>([x = std::move(x), y = std::move(y)](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
       auto r = x.run(state);
       if (r) {
         return std::make_pair(r->first, r->second);
@@ -141,7 +141,7 @@ namespace jerry {
    */
   template<typename T>
   static Tokenizer<std::vector<T>> manyOf(Tokenizer<T> x) {
-    return Tokenizer<std::vector<T>>([x](TokenizerState state) -> std::optional<std::pair<std::vector<T>, TokenizerState>> {
+    return Tokenizer<std::vector<T>>([x = std::move(x)](TokenizerState state) -> std::optional<std::pair<std::vector<T>, TokenizerState>> {
       std::vector<T> gotTokens;
       while(true) {
         if (state.getPosition() >= state.getInputStringSize()) {
@@ -163,7 +163,7 @@ namespace jerry {
 	/** Returns the same state **/
   template<typename T>
   static Tokenizer<T> pure(T value) {
-    return Tokenizer<T>([=](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
+    return Tokenizer<T>([value = std::move(value)](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
         return std::make_pair(value, state);
       }
     );
@@ -172,7 +172,7 @@ namespace jerry {
 	/** Returns the same state **/
   template<typename T>
   static Tokenizer<T> match(T value, std::function<bool(T)> matcher) {
-    return Tokenizer<T>([matcher = std::move(matcher), value](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
+    return Tokenizer<T>([matcher = std::move(matcher), value = std::move(value)](TokenizerState state) -> std::optional<std::pair<T, TokenizerState>> {
       if (matcher(value)) {
         return pure<T>(value).run(state);
       }
@@ -183,7 +183,7 @@ namespace jerry {
 
   template<typename T>
   static Tokenizer<T> isEqual(T value, T other) {
-    auto equalityChecker = [other](T val) {
+    auto equalityChecker = [other = std::move(other)](T val) {
       return val == other;
     };
     return match<T>(value, equalityChecker);
@@ -191,7 +191,7 @@ namespace jerry {
 
   template<typename T>
   static Tokenizer<T> isNotEqual(T value, T other) {
-    auto equalityChecker = [other](T val) {
+    auto equalityChecker = [other = std::move(other)](T val) {
       return val != other;
     };
     return match<T>(value, equalityChecker);
@@ -207,7 +207,7 @@ namespace jerry {
 	/** Returns the same state **/
   template<typename T>
   static Tokenizer<T> fail() {
-    return Tokenizer<T>([=](TokenizerState) -> std::optional<std::pair<T, TokenizerState>> {
+    return Tokenizer<T>([](TokenizerState) -> std::optional<std::pair<T, TokenizerState>> {
         return std::nullopt;
         }
     );
@@ -225,7 +225,7 @@ namespace jerry {
   }
 
   static Tokenizer<char> expectChar(char expected) {
-    return Tokenizer<char>([expected](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
+    return Tokenizer<char>([expected = std::move(expected)](TokenizerState state) -> std::optional<std::pair<char, TokenizerState>> {
         if (state.getPosition() >= state.getInputStringSize() ||
             state.currentCharacter() != expected) {
           return std::nullopt;
