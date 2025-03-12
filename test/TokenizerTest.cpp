@@ -176,3 +176,26 @@ TEST(TokenizerTest, BoolTokenTest) {
   ASSERT_TRUE(r.has_value());
   EXPECT_EQ(r->first, JsonToken::fromBool(false));
 }
+
+TEST(TokenizerTest, NumberTokenTest) {
+  auto r = jsonNumber().run(TokenizerState::init("420.69", 0));
+  ASSERT_TRUE(r.has_value());
+  EXPECT_EQ(r->first, JsonToken::fromNumber(420.69));
+}
+
+class JsonNumberTest :public ::testing::TestWithParam<std::tuple<std::string, JsonToken>> {};
+TEST_P(JsonNumberTest, NumberTest) {
+  const auto& [input, expected] = GetParam();
+  jerry::TokenizerState state = jerry::TokenizerState::init(input, 0);
+  auto r = jsonNumber().run(state);
+  ASSERT_TRUE(r);
+  EXPECT_EQ(r->first, expected);
+}
+INSTANTIATE_TEST_SUITE_P(
+    JsonNumberTests,
+    JsonNumberTest,
+    ::testing::Values(
+      std::make_tuple("320", JsonToken::fromNumber(320)),
+      std::make_tuple("445.56", JsonToken::fromNumber(445.56))
+    )
+);

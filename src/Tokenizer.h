@@ -387,4 +387,39 @@ namespace jerry {
       return JsonToken::fromString(s);
     });
   }
+
+  [[maybe_unused]]
+  static Tokenizer<JsonToken> jsonNumber() {
+    return Tokenizer<JsonToken>([](TokenizerState state) -> std::optional<std::pair<JsonToken, TokenizerState>> {
+        auto r = manyOf<uint>(digit()).run(state);
+        if (!r) {
+          return std::nullopt;
+        }
+        state = r->second;
+        auto digits = r->first;
+        double number = 0;
+        for (int digit : digits){
+          number = number * 10 + digit;
+        }
+
+        // Check for decimal point then get rest of number
+        r = expectChar('.').bind<std::vector<uint>>([](char){
+              return manyOf<uint>(digit());
+            }).run(state);
+
+        if (!r) {
+          return std::make_pair(JsonToken::fromNumber(number), state);
+        }
+        state = r->second;
+
+        digits = r->first;
+        double fraction = 0;
+        double divisor = 10;
+        for (int digit : digits) {
+          fraction += digit / divisor;
+          divisor *= 10;
+        }
+        return std::make_pair(JsonToken::fromNumber(number + fraction), state);
+    });
+  }
 }
