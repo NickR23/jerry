@@ -1,0 +1,9 @@
+/Users/nr/projects/jerry/Debug/CMakeFiles/jerry.dir
+/Users/nr/projects/jerry/Debug/CMakeFiles/tokenizer_tests.dir
+/Users/nr/projects/jerry/Debug/CMakeFiles/test.dir
+/Users/nr/projects/jerry/Debug/CMakeFiles/edit_cache.dir
+/Users/nr/projects/jerry/Debug/CMakeFiles/rebuild_cache.dir
+/Users/nr/projects/jerry/Debug/CMakeFiles/list_install_components.dir
+/Users/nr/projects/jerry/Debug/CMakeFiles/install.dir
+/Users/nr/projects/jerry/Debug/CMakeFiles/install/local.dir
+/Users/nr/projects/jerry/Debug/CMakeFiles/install/strip.dir

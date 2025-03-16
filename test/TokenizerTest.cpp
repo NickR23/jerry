@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include <iostream>
 
 #include "Tokenizer.h"
@@ -8,16 +9,17 @@ using namespace jerry;
 TEST(TokenizerTest, TokenizerExampleTest) {
   // Good example of creating a Tokenizer.
   // Creates a Tokenizer<char> with the lambda passed in.
-  // The lambda attempts to read the char and if it is at the current position then advance().
-  // Otherwise we do the monad thing and return nullopt.
+  // The lambda attempts to read the char and if it is at the current position
+  // then advance(). Otherwise we do the monad thing and return nullopt.
   auto toke = character();
 
-	// State carries the position and the input string.
-  TokenizerState state = TokenizerState::init("the quick brown fox jumped over the fella", 0);
+  // State carries the position and the input string.
+  TokenizerState state =
+      TokenizerState::init("the quick brown fox jumped over the fella", 0);
   // When run is executed on a Tokenizer. We attempt to do the monad's operator.
   // This may return a nullopt if unsuccesful.
   // If succesful return the value and the new state.
-	
+
   EXPECT_EQ(state.currentCharacter(), 't');
   std::optional<std::pair<char, TokenizerState>> newState = toke.run(state);
   EXPECT_EQ(newState->second.currentCharacter(), 'h');
@@ -40,14 +42,9 @@ TEST(TokenizerTest, ParseWordTest) {
   EXPECT_EQ(3, result->second.getPosition());
 }
 
-TEST(TokenizerTest, ParseSentenceBindTest) { 
+TEST(TokenizerTest, ParseSentenceBindTest) {
   std::string input = "the quick brown fox";
-  std::vector<std::string> expectedTokens = {
-    "the",
-    "quick",
-    "brown",
-    "fox"
-  };
+  std::vector<std::string> expectedTokens = {"the", "quick", "brown", "fox"};
   // First, parse the first word directly
   auto wordTokenizer = word();
   auto currentState = TokenizerState::init(input, 0);
@@ -58,12 +55,11 @@ TEST(TokenizerTest, ParseSentenceBindTest) {
   EXPECT_EQ(r->second.getPosition(), input.size());
 }
 
-TEST(TokenizerTest, MapCharTest) { 
+TEST(TokenizerTest, MapCharTest) {
   std::string input = "the quick brown fox";
   auto state = TokenizerState::init(input, 0);
-  auto toUpper = character().map<char>([](char c) {
-    return static_cast<char>(std::toupper(c));
-  });
+  auto toUpper = character().map<char>(
+      [](char c) { return static_cast<char>(std::toupper(c)); });
 
   auto r = toUpper.run(state);
   ASSERT_TRUE(r);
@@ -71,11 +67,11 @@ TEST(TokenizerTest, MapCharTest) {
   EXPECT_EQ(r->second.getPosition(), 1);
 }
 
-TEST(TokenizerTest, BraceOpenTest) { 
+TEST(TokenizerTest, BraceOpenTest) {
   std::string input = "{{}}";
   auto state = TokenizerState::init(input, 0);
   int i = 0;
-  while(true) {
+  while (true) {
     auto r = braceOpen().run(state);
     i++;
     if (!r) {
@@ -88,18 +84,18 @@ TEST(TokenizerTest, BraceOpenTest) {
   EXPECT_EQ(state.getPosition(), 2);
 }
 
-TEST(TokenizerTest, OrElseTest) { 
+TEST(TokenizerTest, OrElseTest) {
   std::string input = "{{}}";
   std::vector<char> expectedTokens = {
-    '{',
-    '{',
-    '}',
-    '}',
+      '{',
+      '{',
+      '}',
+      '}',
   };
   std::vector<char> gotTokens;
   auto state = TokenizerState::init(input, 0);
   auto eitherBraceTokenizer = orElse<char>(braceOpen(), braceClose());
-  while(true) {
+  while (true) {
     auto r = eitherBraceTokenizer.run(state);
     if (!r) {
       break;
@@ -113,7 +109,7 @@ TEST(TokenizerTest, OrElseTest) {
 
 TEST(TokenizerTest, ManyOfTest) {
   std::string input = "abcdefg";
-  std::vector<char> expectedTokens = {'a','b','c','d','e','f','g'};
+  std::vector<char> expectedTokens = {'a', 'b', 'c', 'd', 'e', 'f', 'g'};
   auto allCharsTokenizer = manyOf(character());
   auto r = allCharsTokenizer.run(TokenizerState::init(input, 0));
   ASSERT_TRUE(r.has_value());
@@ -122,7 +118,7 @@ TEST(TokenizerTest, ManyOfTest) {
 
 TEST(TokenizerTest, DigitTest) {
   std::string input = "0123456789";
-  std::vector<uint> expectedTokens = {0,1,2,3,4,5,6,7,8,9};
+  std::vector<uint> expectedTokens = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
   auto r = manyOf(digit()).run(TokenizerState::init(input, 0));
   ASSERT_TRUE(r.has_value());
   EXPECT_EQ(r->first, expectedTokens);
@@ -133,7 +129,7 @@ TEST(TokenizerTest, ParseJsonStringTest) {
   std::vector<JsonToken> expected = {JsonToken::fromString("hello"),
                                      JsonToken::fromString("world")};
 
-  auto toke = manyOf(whitespace()).bind<JsonToken>([](std::vector<char>){
+  auto toke = manyOf(whitespace()).bind<JsonToken>([](std::vector<char>) {
     return jsonString();
   });
   auto r = manyOf(toke).run(TokenizerState::init(input, 0));
@@ -144,11 +140,10 @@ TEST(TokenizerTest, ParseJsonStringTest) {
 TEST(TokenizerTest, StructuralTokenTest) {
   std::string input = "{[]}";
   std::vector<JsonToken> expected = {
-                                    JsonToken::makeStructural(JsonTokenType::ObjectStart),
-                                    JsonToken::makeStructural(JsonTokenType::ArrayStart),
-                                    JsonToken::makeStructural(JsonTokenType::ArrayEnd),
-                                    JsonToken::makeStructural(JsonTokenType::ObjectEnd)
-  };
+      JsonToken::makeStructural(JsonTokenType::ObjectStart),
+      JsonToken::makeStructural(JsonTokenType::ArrayStart),
+      JsonToken::makeStructural(JsonTokenType::ArrayEnd),
+      JsonToken::makeStructural(JsonTokenType::ObjectEnd)};
 
   auto objectTokenizer = orElse(objectStart(), objectEnd());
   auto arrayTokenizer = orElse(arrayStart(), arrayEnd());
@@ -183,7 +178,8 @@ TEST(TokenizerTest, NumberTokenTest) {
   EXPECT_EQ(r->first, JsonToken::fromNumber(420.69));
 }
 
-class JsonNumberTest :public ::testing::TestWithParam<std::tuple<std::string, JsonToken>> {};
+class JsonNumberTest
+    : public ::testing::TestWithParam<std::tuple<std::string, JsonToken>> {};
 TEST_P(JsonNumberTest, NumberTest) {
   const auto& [input, expected] = GetParam();
   jerry::TokenizerState state = jerry::TokenizerState::init(input, 0);
@@ -192,10 +188,7 @@ TEST_P(JsonNumberTest, NumberTest) {
   EXPECT_EQ(r->first, expected);
 }
 INSTANTIATE_TEST_SUITE_P(
-    JsonNumberTests,
-    JsonNumberTest,
-    ::testing::Values(
-      std::make_tuple("320", JsonToken::fromNumber(320)),
-      std::make_tuple("445.56", JsonToken::fromNumber(445.56))
-    )
-);
+    JsonNumberTests, JsonNumberTest,
+    ::testing::Values(std::make_tuple("320", JsonToken::fromNumber(320)),
+                      std::make_tuple("445.56",
+                                      JsonToken::fromNumber(445.56))));
