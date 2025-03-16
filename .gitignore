@@ -44,6 +44,7 @@ Debug/
 install_manifest.txt
 
 # IDE-specific files
+tags
 .vscode/
 .idea/
 *.swp
