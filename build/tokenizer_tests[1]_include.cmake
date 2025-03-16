@@ -1,5 +1,0 @@
-if(EXISTS "/Users/nr/projects/jerry/build/tokenizer_tests[1]_tests.cmake")
-  include("/Users/nr/projects/jerry/build/tokenizer_tests[1]_tests.cmake")
-else()
-  add_test(tokenizer_tests_NOT_BUILT tokenizer_tests_NOT_BUILT)
-endif()
