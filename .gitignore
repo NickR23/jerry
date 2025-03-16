@@ -40,6 +40,7 @@ CMakeFiles/
 CMakeScripts/
 CMakeCache.txt
 cmake_install.cmake
+Debug/
 install_manifest.txt
 
 # IDE-specific files
