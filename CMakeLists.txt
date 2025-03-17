@@ -5,13 +5,14 @@ project(jerry VERSION 0.0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
 set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
 
 add_executable(jerry
-  src/main.cpp
   src/Tokenizer.cpp
+  src/Main.cpp
 )
 
 target_include_directories(jerry PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -27,6 +28,7 @@ endif()
 enable_testing()
 find_package(GTest REQUIRED)
 add_executable(tokenizer_tests
+  test/JsonTest.cpp
   test/TokenizerStateTest.cpp
   test/TokenizerTest.cpp
   src/Tokenizer.cpp

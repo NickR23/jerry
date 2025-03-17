@@ -1,6 +1,4 @@
 #include <cstddef>
-#include <iostream>
-
 #include "Tokenizer.h"
 
 namespace jerry {

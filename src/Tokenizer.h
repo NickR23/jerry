@@ -105,7 +105,7 @@ public:
 };
 
 /**
- * @brief Tries the first tokenizer and if it fails, trying the second
+ * @brief Tries the first tokenizer and if it fails, tries the second
  * tokenizer.
  *
  * @tparam T The type of the token produced by the tokenizers (x and y).
@@ -142,6 +142,7 @@ static Tokenizer<T> orElse(Tokenizer<T> x, Tokenizer<T> y) {
  * Returns a tokenizer that repeatedly applies the given tokenizer `x`
  * and collects the results into a vector. The process stops when the tokenizer
  * `x` fails to match or the end of the input string is reached.
+ * NEVER returns nullopt. Just consumes if it can.
  *
  * @tparam T The type of tokens produced by the tokenizer `x`.
  * @param x The tokenizer to be applied repeatedly.

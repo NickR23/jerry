@@ -39,7 +39,6 @@ struct JsonToken {
     return {type, std::monostate{}};
   }
 
-  // Equality operator
   bool operator==(const JsonToken &other) const {
     if (type != other.type) {
       return false;
@@ -54,8 +53,24 @@ struct JsonToken {
     return value == other.value;
   }
 
+  template<typename T>
+  std::optional<T> toValue() const {
+    if (std::holds_alternative<T>(value)){
+      return std::get<T>(value);
+    }
+    return std::nullopt;
+  }
+
+  std::optional<std::string> toString() const {
+    return toValue<std::string>();
+  }
+
+  std::optional<double> toNumber() const {
+    return toValue<double>();
+  }
+
   // String representation for debuggin
-  std::string toString() const {
+  std::string toDebugString() const {
     std::stringstream ss;
     switch (type) {
       case JsonTokenType::ObjectStart:
@@ -106,8 +121,7 @@ struct JsonToken {
   }
 };
 
-// Stream operator for easy printing
 inline std::ostream &operator<<(std::ostream &os, const JsonToken &token) {
-  return os << token.toString();
+  return os << token.toDebugString();
 }
 }  // namespace jerry
