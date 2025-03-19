@@ -10,6 +10,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
 set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
 
+set(CTEST_OUTPUT_ON_FAILURE ON)
+
 add_executable(jerry
   src/Tokenizer.cpp
   src/Main.cpp
