@@ -292,11 +292,6 @@ static Tokenizer<char> colon() {
 }
 
 [[maybe_unused]]
-static Tokenizer<char> comma() {
-  return expectChar(',');
-}
-
-[[maybe_unused]]
 static Tokenizer<char> doubleQuote() {
   return expectChar('"');
 }
@@ -311,11 +306,15 @@ static Tokenizer<JsonToken> null() {
 [[maybe_unused]]
 static Tokenizer<JsonToken> boolean() {
   return orElse(expectString("true"), expectString("false"))
-      .map<JsonToken>([](std::string s) {
-        auto trueOrFalse = [](std::string s) {
-          return true ? s == "true" : false;
-        };
-        return JsonToken::fromBool(trueOrFalse(s));
+      .map<JsonToken>([](std::string s) -> JsonToken {
+        if (s == "true") {
+          return JsonToken::fromBool(true);
+        }
+        else if (s == "false") {
+          return JsonToken::fromBool(false);
+        }
+        // This should never happen but we need to return something
+        return JsonToken::makeNull();
       });
 }
 
@@ -367,6 +366,16 @@ static Tokenizer<JsonToken> arrayStart() {
 }
 
 [[maybe_unused]]
+static Tokenizer<JsonToken> comma() {
+  return character().bind<JsonToken>([](char c) {
+    return isEqual(c, ',').bind<JsonToken>([](char) {
+      return pure(JsonToken::makeStructural(JsonTokenType::Comma));
+    });
+  });
+}
+
+
+[[maybe_unused]]
 static Tokenizer<JsonToken> arrayEnd() {
   return character().bind<JsonToken>([](char c) {
     return isEqual(c, ']').bind<JsonToken>([](char) {
@@ -400,7 +409,7 @@ static Tokenizer<JsonToken> jsonNumber() {
       [](TokenizerState state)
           -> std::optional<std::pair<JsonToken, TokenizerState>> {
         auto r = manyOf<uint>(digit()).run(state);
-        if (!r) {
+        if (!r || r->first.size() == 0) {
           return std::nullopt;
         }
         state = r->second;

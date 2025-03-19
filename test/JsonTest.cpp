@@ -3,10 +3,23 @@
 #include "Json.h"
 
 using namespace jerry;
-TEST(JsonParseTest, JsonTestInit) {
-  auto json = Json::fromString("hello");
+TEST(JsonParseTest, JsonTestStringLiteral) {
+  std::string input = "\"hello\"";
+  auto json = Json::fromString(input);
   ASSERT_TRUE(json);
-  EXPECT_EQ(json->getValue(), JsonValue{"hello"});
+  
+  auto jsonValue = json->getValue();
+  auto strOpt = jsonValue.toString();
+  ASSERT_TRUE(strOpt.has_value());
+  EXPECT_EQ(strOpt.value(), "hello");
+}
+
+TEST(JsonParseTest, JsonTestList) {
+  std::string input = "[\"hello\", \"beautiful\", \"world\"]";
+  auto expected = JsonValue({"hello", "beautiful", "world"});
+  auto json = Json::fromString(input);
+  ASSERT_TRUE(json);
+  EXPECT_EQ(json->getValue(), expected);
 }
 
 // TEST(JsonParseTest, JsonSimpleKeyValueTest) {

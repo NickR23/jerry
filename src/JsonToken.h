@@ -19,6 +19,7 @@ enum class JsonTokenType {
 };
 
 struct JsonToken {
+  // TODO JsonTokenType and value should be private.
   JsonTokenType type;
   std::variant<std::monostate, std::string, double, bool> value;
 
@@ -53,20 +54,18 @@ struct JsonToken {
     return value == other.value;
   }
 
-  template<typename T>
-  std::optional<T> toValue() const {
-    if (std::holds_alternative<T>(value)){
-      return std::get<T>(value);
+  std::optional<std::string> toString() const {
+    if (std::holds_alternative<std::string>(value)) {
+      return std::get<std::string>(value);
     }
     return std::nullopt;
   }
 
-  std::optional<std::string> toString() const {
-    return toValue<std::string>();
-  }
-
   std::optional<double> toNumber() const {
-    return toValue<double>();
+    if (std::holds_alternative<double>(value)) {
+      return std::get<double>(value);
+    }
+    return std::nullopt;
   }
 
   // String representation for debuggin
@@ -118,6 +117,15 @@ struct JsonToken {
     }
 
     return ss.str();
+  }
+
+  private:
+  template<typename T>
+  std::optional<T> maybeValue() const {
+    if (std::holds_alternative<T>(value)){
+      return std::get<T>(value);
+    }
+    return std::nullopt;
   }
 };
 
