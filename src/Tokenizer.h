@@ -292,6 +292,11 @@ static Tokenizer<char> colon() {
 }
 
 [[maybe_unused]]
+static Tokenizer<char> negative() {
+  return expectChar('-');
+}
+
+[[maybe_unused]]
 static Tokenizer<char> doubleQuote() {
   return expectChar('"');
 }
@@ -408,6 +413,13 @@ static Tokenizer<JsonToken> jsonNumber() {
   return Tokenizer<JsonToken>(
       [](TokenizerState state)
           -> std::optional<std::pair<JsonToken, TokenizerState>> {
+        auto negativeResult = negative().run(state);
+        bool isNegative = false;
+        if (negativeResult) {
+          state = negativeResult->second;
+          isNegative = true;
+        }
+
         auto r = manyOf<uint>(digit()).run(state);
         if (!r || r->first.size() == 0) {
           return std::nullopt;
@@ -417,6 +429,9 @@ static Tokenizer<JsonToken> jsonNumber() {
         double number = 0;
         for (int digit : digits) {
           number = number * 10 + digit;
+        }
+        if (isNegative) {
+          number *= -1;
         }
 
         // Check for decimal point then get rest of number
