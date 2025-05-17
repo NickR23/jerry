@@ -5,7 +5,7 @@
 using namespace jerry;
 
 class JsonParseTest
-    : public ::testing::TestWithParam<std::pair<std::string, Json>> {};
+  : public ::testing::TestWithParam<std::pair<std::string, Json>> {};
 
 TEST_P(JsonParseTest, jsonObjectParseTest) {
   const auto& [input, expected] = GetParam();
@@ -15,20 +15,22 @@ TEST_P(JsonParseTest, jsonObjectParseTest) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    JsonParseTests, JsonParseTest,
-    ::testing::Values(
-        std::make_pair("[\"hello\", \"beautiful\", \"world\"]", Json(std::vector<JsonValue>({"hello", "beautiful", "world"}))),
-        std::make_pair("{\"hey\" : \"dude\"}", Json(JsonValue(std::unordered_map<std::string, JsonValue>{{"hey", JsonValue("dude")}}))),
-        std::make_pair("true", Json(JsonValue(true))),
-        std::make_pair("{\"enable gamer mode?\" : true}", Json(JsonValue(std::unordered_map<std::string, JsonValue>{{"enable gamer mode?", JsonValue(true)}}))),
-        std::make_pair("{\"NESTED json objects\" : {\"cowabunga\" : [\"surfs\",\"up\"]}}",
-          Json(JsonValue(std::unordered_map<std::string, JsonValue>{
-            {"NESTED json objects",
-             JsonValue(std::unordered_map<std::string, JsonValue>{
-               {"cowabunga", JsonValue(std::vector<JsonValue>({"surfs", "up"}))}
-             })
-            }
-          }))
-            )
-        )
-    );
+  JsonParseTests, JsonParseTest,
+  ::testing::Values(
+    std::make_pair("[\"hello\", \"beautiful\", \"world\"]", Json(std::vector<JsonValue>({"hello", "beautiful", "world"}))),
+    std::make_pair("{\"hey\" : \"dude\"}", Json(JsonValue(std::unordered_map<std::string, JsonValue>{{"hey", JsonValue("dude")}}))),
+    std::make_pair("true", Json(JsonValue(true))),
+    std::make_pair("{\"enable gamer mode?\" : true}", Json(JsonValue(std::unordered_map<std::string, JsonValue>{{"enable gamer mode?", JsonValue(true)}}))),
+    std::make_pair("{\"NESTED json objects\" : {\"cowabunga\" : [\"surfs\",\"up\"]}}",
+      Json(JsonValue(std::unordered_map<std::string, JsonValue>{
+      {"NESTED json objects",
+       JsonValue(std::unordered_map<std::string, JsonValue>{
+         {"cowabunga", JsonValue(std::vector<JsonValue>({"surfs", "up"}))}
+       })
+      }
+      }))
+    ),
+    // Additional tests
+    std::make_pair("123", Json(JsonValue(123)))
+  )
+);

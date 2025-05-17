@@ -15,6 +15,7 @@ struct JsonValue {
   JsonValue() = default;
   
   JsonValue(bool b) : value(b) {}
+  JsonValue(int n) : value((double) n) {}
   JsonValue(double d) : value(d) {}
   JsonValue(const std::string& s) : value(s) {}
   JsonValue(const char* s) : value(std::string(s)) {}
