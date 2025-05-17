@@ -216,6 +216,13 @@ class Json {
     if (objectStartResult)  {
       state = objectStartResult->second;
       std::unordered_map<std::string, JsonValue> objectMap;
+
+      // Empty objects are valid
+      auto objectCloseResult = objectEnd().run(state);
+      if (objectCloseResult) {
+        return std::make_pair(Json(JsonValue(objectMap)), state);
+      }
+
       bool continueObjectParsing = true;
       while (continueObjectParsing) {
         state = consumeWhitespace(state);
@@ -250,7 +257,16 @@ class Json {
         } else {
           continueObjectParsing = false;
         }
+
       }
+
+      state = consumeWhitespace(state);
+
+      auto closingBraceResult = braceClose().run(state);
+      if (!closingBraceResult) {
+        return std::nullopt;
+      }
+
       return std::make_pair(Json(JsonValue(objectMap)), state);
     }
 
