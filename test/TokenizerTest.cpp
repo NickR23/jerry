@@ -157,7 +157,7 @@ TEST(TokenizerTest, StructuralTokenTest) {
 
 TEST(TokenizerTest, NullTokenTest) {
   std::string input = "null";
-  auto r = null().run(TokenizerState::init(input, 0));
+  auto r = jsonNull().run(TokenizerState::init(input, 0));
   ASSERT_TRUE(r.has_value());
   EXPECT_EQ(r->first.type, JsonTokenType::Null);
 }

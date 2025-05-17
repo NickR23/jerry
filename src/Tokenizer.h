@@ -302,7 +302,7 @@ static Tokenizer<char> doubleQuote() {
 }
 
 [[maybe_unused]]
-static Tokenizer<JsonToken> null() {
+static Tokenizer<JsonToken> jsonNull() {
   return expectString("null").map<JsonToken>([](std::string) {
     return JsonToken::makeStructural(JsonTokenType::Null);
   });

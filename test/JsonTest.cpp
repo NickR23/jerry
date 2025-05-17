@@ -33,6 +33,7 @@ INSTANTIATE_TEST_SUITE_P(
     std::make_pair("123", Json(JsonValue(123))),
     std::make_pair("-45", Json(JsonValue(-45))),
     // TODO parsing doubles is broken (rounding errors)
-    std::make_pair("-45.67", Json(JsonValue(-45.67)))
+    std::make_pair("-45.67", Json(JsonValue(-45.67))),
+    std::make_pair("null", Json(JsonValue()))
   )
 );

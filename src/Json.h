@@ -1,5 +1,6 @@
 #include <string>
 #include <variant>
+#include <optional>
 
 #include "Tokenizer.h"
 
@@ -8,12 +9,11 @@ namespace jerry {
 struct JsonValue {
   // JsonValues or either a literal (bool, string, etc...) or a mapping of a
   // key (std::string) to another value.
-  std::variant<bool, double, std::string, std::vector<JsonValue>,
+  std::variant<std::monostate, bool, double, std::string, std::vector<JsonValue>,
                std::unordered_map<std::string, JsonValue>>
       value;
   
-  JsonValue() = default;
-  
+  JsonValue() : value(std::monostate()) {}
   JsonValue(bool b) : value(b) {}
   JsonValue(int n) : value((double) n) {}
   JsonValue(double d) : value(d) {}
@@ -35,6 +35,9 @@ struct JsonValue {
   }
 
   static std::optional<JsonValue> fromJsonToken(JsonToken token) {
+    if (token.type == JsonTokenType::Null) {
+      return JsonValue();
+    }
     auto jVal = std::visit([](auto&& val) -> std::optional<JsonValue> {
         using T = std::decay_t<decltype(val)>;
         if constexpr (std::is_same_v<T, std::string>) {
@@ -166,6 +169,14 @@ class Json {
     auto jsonBoolResult = boolean().run(state);
     if (jsonBoolResult) {
       auto jVal = JsonValue::fromJsonToken(jsonBoolResult->first);
+      if (jVal) {
+        return Json(jVal.value());
+      }
+    }
+
+    auto jsonNullResult = jsonNull().run(state);
+    if(jsonNullResult) {
+      auto jVal = JsonValue::fromJsonToken(JsonToken::makeNull());
       if (jVal) {
         return Json(jVal.value());
       }
