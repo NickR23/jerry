@@ -2,15 +2,35 @@
 
 A fast, lightweight JSON parser written in modern C++.
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/9548e1ca-bf4f-46aa-892b-4054a36f7441" alt="Jerry JSON Parser" width="200"/>
-  <br>
-  <em>Literally jerry rn</em>
-</p>
-
 ## Overview
 
 Jerry is a JSON parser. It uses a monadic approach to parse JSON data.
+
+## Usage
+
+```cpp
+#include "Json.h"
+#include <iostream>
+#include <unordered_map>
+#include <string>
+
+int main() {
+  std::string input = "\"hello world\" : \"how are you?\"";
+  std::unordered_map<std::string, json> result = Json::fromString(input);
+
+  // Print the parsed JSON key-value pairs
+  for (const auto& [key, value] : result) {
+    std::cout << key << " : " << value << std::endl;
+  }
+  return 0;
+}
+```
+
+This will output:
+
+```
+hello world : how are you?
+```
 
 ## Building
 
@@ -29,3 +49,9 @@ make
 # Run tests
 ctest
 ```
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/9548e1ca-bf4f-46aa-892b-4054a36f7441" alt="Jerry JSON Parser" width="200"/>
+  <br>
+  <em>Literally jerry rn</em>
+</p>
