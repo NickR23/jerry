@@ -161,6 +161,15 @@ class Json {
 
     state = consumeWhitespace(state);
 
+    // Check if this is a bool
+    auto jsonBoolResult = boolean().run(state);
+    if (jsonBoolResult) {
+      auto jVal = JsonValue::fromJsonToken(jsonBoolResult->first);
+      if (jVal) {
+        return Json(jVal.value());
+      }
+    }
+
     // Check if this is a literal string
     auto jsonStringResult = jsonString().run(state);
     if (jsonStringResult) {
@@ -225,7 +234,7 @@ class Json {
   }
 
 
-  static std::optional<Json> fromString(std::string& input) {
+  static std::optional<Json> fromString(const std::string& input) {
     auto state = TokenizerState(input, 0);
     return fromState(state);
   }

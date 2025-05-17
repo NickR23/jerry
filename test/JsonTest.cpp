@@ -22,15 +22,21 @@ TEST(JsonParseTest, JsonTestList) {
   EXPECT_EQ(json->getValue(), expected);
 }
 
-// TODO Parameterize this and add more tests...
-TEST(JsonParseTest, JsonTestObject) {
-  std::string input = "{\"hey\" : \"dude\"";
-  auto expected = std::unordered_map<std::string, JsonValue>({
-    {"hey", JsonValue("dude")}
-  });
+class JsonParseTest
+    : public ::testing::TestWithParam<std::pair<std::string, std::unordered_map<std::string, JsonValue>>> {};
+
+TEST_P(JsonParseTest, JsonObjectParseTest) {
+  const auto& [input, expected] = GetParam();
   auto json = Json::fromString(input);
   ASSERT_TRUE(json);
-  
+
   auto jsonValue = json->getValue();
   EXPECT_EQ(jsonValue, expected);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    JsonParseTests, JsonParseTest,
+    ::testing::Values(
+        std::make_pair("{\"hey\" : \"dude\"", std::unordered_map<std::string, JsonValue>{{"hey", JsonValue("dude")}}),
+        std::make_pair("{\"enable gamer mode?\" : true", std::unordered_map<std::string, JsonValue>{{"enable gamer mode?", JsonValue(true)}})
+      ));
