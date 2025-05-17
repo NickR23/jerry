@@ -9,7 +9,7 @@ struct JsonValue {
   // JsonValues or either a literal (bool, string, etc...) or a mapping of a
   // key (std::string) to another value.
   std::variant<bool, double, std::string, std::vector<JsonValue>,
-               std::map<std::string, JsonValue>>
+               std::unordered_map<std::string, JsonValue>>
       value;
   
   JsonValue() = default;
@@ -19,7 +19,7 @@ struct JsonValue {
   JsonValue(const std::string& s) : value(s) {}
   JsonValue(const char* s) : value(std::string(s)) {}
   JsonValue(const std::vector<JsonValue>& v) : value(v) {}
-  JsonValue(const std::map<std::string, JsonValue>& m) : value(m) {}
+  JsonValue(const std::unordered_map<std::string, JsonValue>& m) : value(m) {}
   
   JsonValue(std::initializer_list<std::string> strings) {
     std::vector<JsonValue> values;
@@ -153,15 +153,15 @@ class Json {
   }
 
   static std::optional<Json> fromState(TokenizerState& state) {
-    auto consumeWhitespace = [&state]() {
+    auto consumeWhitespace = [](TokenizerState& state) {
       auto r = manyOf(whitespace()).run(state);
       // manyOf should not return nullopt ever but lets be safe.
       return r ? r->second : state;
     };
 
-    state = consumeWhitespace();
+    state = consumeWhitespace(state);
 
-    // Check if this is a literal
+    // Check if this is a literal string
     auto jsonStringResult = jsonString().run(state);
     if (jsonStringResult) {
       auto jVal = JsonValue::fromJsonToken(jsonStringResult->first);
@@ -189,6 +189,37 @@ class Json {
       }
       return Json(values.value());
     }
+
+    // Check if json.
+    auto objectStartResult = objectStart().run(state);
+    if (objectStartResult)  {
+        // Advances state past the open brace.
+        state = objectStartResult->second;
+        // Next should be a key (string)
+        // TODO write "consume" func in Tokenizer that does this.
+        auto keyResult = jsonString().run(state);
+        if (!keyResult) {
+          return std::nullopt;
+        }
+        state = keyResult->second;
+        state = consumeWhitespace(state);
+        auto colonResult = colon().run(state);
+        if (!colonResult) {
+          return std::nullopt;
+        }
+        state = colonResult->second;
+        state = consumeWhitespace(state);
+
+        //Recurse
+        auto innerJsonResult = fromState(state);
+        if (!innerJsonResult) {
+          return std::nullopt;
+        }
+        auto v = std::unordered_map<std::string, JsonValue>({
+          {keyResult->first.toString().value(), innerJsonResult->getValue()}
+        });
+        return Json(JsonValue(v));
+      }
 
     return std::nullopt;
   }

@@ -22,9 +22,15 @@ TEST(JsonParseTest, JsonTestList) {
   EXPECT_EQ(json->getValue(), expected);
 }
 
-// TEST(JsonParseTest, JsonSimpleKeyValueTest) {
-//   auto json = Json::fromString("\"key\" : \"value\"");
-//   ASSERT_TRUE(json);
-//   EXPECT_EQ(json.value["key"], JsonValue{"value"});
-//   // EXPECT_EQ(json->getValue(), JsonValue{std::map<std::string, JsonValue>{"hello"});
-// }
+// TODO Parameterize this and add more tests...
+TEST(JsonParseTest, JsonTestObject) {
+  std::string input = "{\"hey\" : \"dude\"";
+  auto expected = std::unordered_map<std::string, JsonValue>({
+    {"hey", JsonValue("dude")}
+  });
+  auto json = Json::fromString(input);
+  ASSERT_TRUE(json);
+  
+  auto jsonValue = json->getValue();
+  EXPECT_EQ(jsonValue, expected);
+}
