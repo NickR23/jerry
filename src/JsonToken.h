@@ -21,6 +21,7 @@ enum class JsonTokenType {
 struct JsonToken {
   // TODO JsonTokenType and value should be private.
   JsonTokenType type;
+
   std::variant<std::monostate, std::string, double, bool> value;
 
   // Factory methods for creating tokens
