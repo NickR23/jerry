@@ -239,9 +239,10 @@ class Json {
     return fromState(state);
   }
 
- private:
   explicit Json(JsonValue v) : value(v) {};
   explicit Json(std::vector<JsonValue> v) : value(JsonValue{v}) {};
+
+ private:
   JsonValue value;
 };
 
