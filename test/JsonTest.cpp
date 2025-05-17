@@ -34,6 +34,23 @@ INSTANTIATE_TEST_SUITE_P(
     std::make_pair("-45", Json(JsonValue(-45))),
     // TODO parsing doubles is broken (rounding errors)
     std::make_pair("-45.67", Json(JsonValue(-45.67))),
-    std::make_pair("null", Json(JsonValue()))
+    std::make_pair("null", Json(JsonValue())),
+    std::make_pair("false", Json(JsonValue(false))),
+    std::make_pair("[1, 2, 3, 4]", Json(std::vector<JsonValue>({1, 2, 3, 4}))),
+    std::make_pair("{\"a\":1,\"b\":2}", Json(JsonValue(std::unordered_map<std::string, JsonValue>{{"a", 1}, {"b", 2}}))),
+    std::make_pair("{\"emptyArray\":[]}", Json(JsonValue(std::unordered_map<std::string, JsonValue>{{"emptyArray", JsonValue(std::vector<JsonValue>{})}}))),
+    std::make_pair("{\"emptyObject\":{}}", Json(JsonValue(std::unordered_map<std::string, JsonValue>{{"emptyObject", JsonValue(std::unordered_map<std::string, JsonValue>{})}}))),
+    std::make_pair("[{\"x\":1}, {\"y\":2}]", Json(std::vector<JsonValue>{
+      JsonValue(std::unordered_map<std::string, JsonValue>{{"x", 1}}),
+      JsonValue(std::unordered_map<std::string, JsonValue>{{"y", 2}})
+    })),
+    std::make_pair("{\"nested\":[{\"a\":true}, {\"b\":false}]}", Json(JsonValue(std::unordered_map<std::string, JsonValue>{
+      {"nested", JsonValue(std::vector<JsonValue>{
+        JsonValue(std::unordered_map<std::string, JsonValue>{{"a", true}}),
+        JsonValue(std::unordered_map<std::string, JsonValue>{{"b", false}})
+      })}
+    }))),
+    std::make_pair("\"string with \\\"escaped quotes\\\"\"", Json(JsonValue("string with \"escaped quotes\""))),
+    std::make_pair("{\"unicode\":\"\\u263A\"}", Json(JsonValue(std::unordered_map<std::string, JsonValue>{{"unicode", JsonValue("\u263A")}})))
   )
 );
