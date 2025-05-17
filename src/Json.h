@@ -88,7 +88,7 @@ class Json {
     return value;
   }
 
-  static std::optional<std::vector<JsonValue>> parseList(TokenizerState& state) {
+  static std::optional<std::pair<std::vector<JsonValue>, TokenizerState>> parseList(TokenizerState& state) {
     std::vector<JsonValue> values;
     
     // Skip whitespace
@@ -104,7 +104,7 @@ class Json {
       if (endResult) {
         // Array is complete, update state and return values
         state = endResult->second;
-        return values;
+        return std::make_pair(values, state);
       }
       
       // Try to parse a value (string, number, or boolean)
@@ -139,7 +139,7 @@ class Json {
         if (endResult) {
           // Array is complete, update state and return values
           state = endResult->second;
-          return values;
+          return std::make_pair(values, state);
         }
         // Expected comma or end of array
         return std::nullopt;
@@ -156,7 +156,7 @@ class Json {
     }
   }
 
-  static std::optional<Json> fromState(TokenizerState& state) {
+  static std::optional<std::pair<Json, TokenizerState>> fromState(TokenizerState& state) {
     auto consumeWhitespace = [](TokenizerState& state) {
       auto r = manyOf(whitespace()).run(state);
       // manyOf should not return nullopt ever but lets be safe.
@@ -170,7 +170,7 @@ class Json {
     if (jsonBoolResult) {
       auto jVal = JsonValue::fromJsonToken(jsonBoolResult->first);
       if (jVal) {
-        return Json(jVal.value());
+        return std::make_pair(Json(jVal.value()), jsonBoolResult->second);
       }
     }
 
@@ -178,7 +178,7 @@ class Json {
     if(jsonNullResult) {
       auto jVal = JsonValue::fromJsonToken(JsonToken::makeNull());
       if (jVal) {
-        return Json(jVal.value());
+        return std::make_pair(Json(jVal.value()), jsonNullResult->second);
       }
     }
 
@@ -187,7 +187,7 @@ class Json {
     if (jsonStringResult) {
       auto jVal = JsonValue::fromJsonToken(jsonStringResult->first);
       if (jVal) {
-        return Json(jVal.value());
+        return std::make_pair(Json(jVal.value()), jsonStringResult->second);
       }
     }
     
@@ -196,7 +196,7 @@ class Json {
     if (jsonNumberResult) {
       auto jVal = JsonValue::fromJsonToken(jsonNumberResult->first);
       if (jVal) {
-        return Json(jVal.value());
+        return std::make_pair(Json(jVal.value()), jsonNumberResult->second);
       }
     }
 
@@ -204,18 +204,21 @@ class Json {
     auto arrayStartResult = arrayStart().run(state);
     if (arrayStartResult) {
       state = arrayStartResult->second;
-      auto values = parseList(state);
-      if (!values) {
+      auto parseListResult = parseList(state);
+      if (!parseListResult) {
         return std::nullopt;
       }
-      return Json(values.value());
+      return std::make_pair(Json(parseListResult->first), parseListResult->second);
     }
 
     // Check if json.
     auto objectStartResult = objectStart().run(state);
     if (objectStartResult)  {
-        // Advances state past the open brace.
-        state = objectStartResult->second;
+      state = objectStartResult->second;
+      std::unordered_map<std::string, JsonValue> objectMap;
+      bool continueObjectParsing = true;
+      while (continueObjectParsing) {
+        state = consumeWhitespace(state);
         // Next should be a key (string)
         // TODO write "consume" func in Tokenizer that does this.
         auto keyResult = jsonString().run(state);
@@ -236,11 +239,20 @@ class Json {
         if (!innerJsonResult) {
           return std::nullopt;
         }
-        auto v = std::unordered_map<std::string, JsonValue>({
-          {keyResult->first.toString().value(), innerJsonResult->getValue()}
-        });
-        return Json(JsonValue(v));
+
+        state = innerJsonResult->second;
+
+        objectMap[keyResult->first.toString().value()] = innerJsonResult->first.getValue();
+
+        auto commaResult = comma().run(state);
+        if (commaResult) {
+          state = commaResult->second;
+        } else {
+          continueObjectParsing = false;
+        }
       }
+      return std::make_pair(Json(JsonValue(objectMap)), state);
+    }
 
     return std::nullopt;
   }
@@ -248,7 +260,11 @@ class Json {
 
   static std::optional<Json> fromString(const std::string& input) {
     auto state = TokenizerState(input, 0);
-    return fromState(state);
+    auto result = fromState(state);
+    if (!result) {
+      return std::nullopt;
+    }
+    return result->first;
   }
 
   explicit Json(JsonValue v) : value(v) {};
