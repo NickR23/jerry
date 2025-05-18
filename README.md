@@ -35,7 +35,7 @@ hello world : how are you?
 ## Currently broken features:
 - `double`s  currently have rounding errors
 - No unicode support (i.e. "\u263A")
-- No support for quotation escape sequences (i.e. \")
+- No support for quotation escape sequences (i.e. \\")
 
 ## Building
 
