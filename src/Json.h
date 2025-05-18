@@ -107,23 +107,17 @@ class Json {
         return std::make_pair(values, state);
       }
       
-      // Try to parse a value (string, number, or boolean)
-      auto valueTokenizer = orElse(orElse(jsonString(), jsonNumber()), boolean());
-      auto valueResult = valueTokenizer.run(state);
-      if (!valueResult) {
-        // Failed to parse a value
+      auto innerJsonResult = Json::fromState(state);
+      if (!innerJsonResult) {
         return std::nullopt;
       }
+
+      auto innerJson = innerJsonResult.value().first;
+      state = innerJsonResult.value().second;
       
-      // Convert JsonToken to JsonValue
-      auto jsonValue = JsonValue::fromJsonToken(valueResult->first);
-      if (!jsonValue) {
-        return std::nullopt;
-      }
       
       // Add value to our list and update state
-      values.push_back(jsonValue.value());
-      state = valueResult->second;
+      values.push_back(innerJson.getValue());
       
       // Skip whitespace
       whitespacesResult = manyOf(whitespace()).run(state);
@@ -266,6 +260,7 @@ class Json {
       if (!closingBraceResult) {
         return std::nullopt;
       }
+      state = closingBraceResult->second;
 
       return std::make_pair(Json(JsonValue(objectMap)), state);
     }
