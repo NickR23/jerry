@@ -2,10 +2,6 @@
 
 A fast, lightweight JSON parser written in modern C++.
 
-## Overview
-
-Jerry is a JSON parser. It uses a monadic approach to parse JSON data.
-
 ## Usage
 
 ```cpp
