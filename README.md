@@ -37,7 +37,7 @@ hello world : how are you?
 
 ```bash
 # Clone the repository
-git clone https://github.com/username/jerry.git
+git clone https://github.com/NickR23/jerry.git
 cd jerry
 
 # Create a build directory
